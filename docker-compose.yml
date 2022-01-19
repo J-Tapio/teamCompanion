@@ -1,0 +1,24 @@
+services:
+  db_test:
+    image: postgres:14.1-alpine
+    restart: always
+    ports:
+      - 5444:5432
+    environment:
+      POSTGRES_DB: teamcompanion_db_test
+      POSTGRES_PASSWORD: salasana
+      POSTGRES_USER: postgres
+      ADMINPWD: test_200321!
+    command: ["postgres", "-c", "log_statement=all"]
+  teamcompanion_db:
+    image: postgres:14.1-alpine
+    restart: always
+    ports:
+      - 5432:5432
+    volumes:
+      - ./.pg_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: teamcompanion_db
+      POSTGRES_PASSWORD: salasana
+      POSTGRES_USER: postgres
+      ADMINPWD: dev_200321!

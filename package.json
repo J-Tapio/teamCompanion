@@ -1,0 +1,49 @@
+{
+  "name": "teamcompanion",
+  "version": "0.1.0",
+  "description": "api for teams to create field/training/rehab sessions",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "start": "index.js",
+    "dev": "NODE_ENV=development nodemon index.js",
+    "test": "NODE_ENV=development mocha --timeout 15000 src/test/**/*.js --require src/test/hooks.js",
+    "db:migrate": "knex migrate:latest",
+    "db:rollback": "knex migrate:rollback",
+    "db:destroy": "knex migrate:rollback --all",
+    "db:seed": "knex seed:run",
+    "db:init": "run-s db:destroy db:migrate db:seed",
+    "db:unlock": "knex migrate:unlock",
+    "knex": "knex",
+    "mocha": "mocha"
+  },
+  "author": "Juha-Tapio Turpeinen",
+  "license": "ISC",
+  "dependencies": {
+    "chai-http": "^4.3.0",
+    "dotenv": "^10.0.0",
+    "fastify": "^3.25.0",
+    "fastify-bcrypt": "^1.0.0",
+    "fastify-cors": "^6.0.2",
+    "fastify-jwt": "^4.1.3",
+    "fastify-plugin": "^3.0.0",
+    "fastify-print-routes": "^1.0.2",
+    "fastify-sensible": "^3.1.2",
+    "fastify-swagger": "^4.13.0",
+    "fastify-tokenize": "^1.3.1",
+    "knex": "^0.95.15",
+    "middie": "^5.3.0",
+    "objection": "^3.0.1",
+    "pg": "^8.7.1",
+    "pino-pretty": "^7.3.0"
+  },
+  "devDependencies": {
+    "bcryptjs": "^2.4.3",
+    "chai": "^4.3.4",
+    "chai-arrays": "^2.2.0",
+    "jsonwebtoken": "^8.5.1",
+    "mocha": "^9.1.3",
+    "nodemon": "^2.0.15",
+    "npm-run-all": "^4.1.5"
+  }
+}
