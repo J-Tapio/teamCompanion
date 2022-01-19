@@ -212,12 +212,13 @@ describe("::: EQUIPMENT CONTROLLER TESTS :::", () => {
         .set("authorization", `Bearer ${adminUserToken}`);
       expect(res.statusCode).to.eql(404);
     })
-    it("Should return equipment by known equipment id", async() => {
+    it.only("Should return equipment by known equipment id", async() => {
       let res = await chai.requester
         .get("/equipment/3")
         .set("authorization", `Bearer ${adminUserToken}`);
 
         console.log(res.body);
+        console.log(res.body.exercises[2]);
       
       expect(res.statusCode).to.eql(200);
       expect(res.body).to.have.all.keys(

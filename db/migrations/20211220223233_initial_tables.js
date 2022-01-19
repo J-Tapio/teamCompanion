@@ -244,6 +244,7 @@ export function down(knex) {
   .dropTableIfExists("user_teams")
   .dropTableIfExists("user_information")
   .dropTableIfExists("exercise_sets")
+  .dropTableIfExists("user_activities")
   .dropTableIfExists("activities")
   .dropTableIfExists("exercises_equipment")
   .dropTableIfExists("exercises")

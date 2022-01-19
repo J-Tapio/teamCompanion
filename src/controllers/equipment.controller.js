@@ -46,7 +46,6 @@ async function equipmentById(request, reply) {
         "exercises_join.exercisePositions",
         "exercises_join.exerciseInformation"
       )
-      .orderBy("equipment.id", "asc")
       .orderBy("equipmentId", "asc")
       .where("equipment.id", request.params.id)
       .throwIfNotFound();
