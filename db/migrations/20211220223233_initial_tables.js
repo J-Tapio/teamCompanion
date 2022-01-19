@@ -65,7 +65,7 @@ export function up(knex) {
   })
 
   .createTable("user_teams", function(table) {
-    table.increments("id").primary().notNullable();
+    table.increments("id").primary();
     table.integer("user_id");
     table
     .foreign("user_id")
@@ -98,21 +98,13 @@ export function up(knex) {
 
   .createTable("activities", function(table) {
     table.increments("id").primary();
-    table.integer("team_id");
-    table
-      .foreign("team_id")
-      .references("id")
-      .inTable("teams");
-    table.enu("activity_type", ["Rehabilitation", "Fitness", "TeamPractice", "Match"]);
-    table.datetime("activity_start", {useTz: false, precision: 0});
-    table.datetime("activity_end", {useTz: false, precision: 0});
-    table.integer("created_by");
-    table
-      .foreign("created_by")
-      .references("id")
-      .inTable("users")
-      .onUpdate("CASCADE")
-      .onDelete("CASCADE");
+    table.enu("activity_type", [
+      "Rehabilitation", 
+      "Fitness", 
+      "TeamPractise",
+      "TeamMeeting", 
+      "TeamMatch"
+    ]);
     table
       .timestamp("created_at", { useTz: true, precision: 0 })
       .defaultTo(knex.fn.now(0));
@@ -123,11 +115,11 @@ export function up(knex) {
 
   .createTable("user_activities", function(table) {
     table.increments("id").primary();
-    table.integer("user_id");
+    table.integer("athlete_id");
     table
-      .foreign("user_id")
+      .foreign("athlete_id")
       .references("id")
-      .inTable("users")
+      .inTable("user_teams")
       .onUpdate("CASCADE")
       .onDelete("CASCADE");
     table.integer("activity_id");
@@ -137,7 +129,16 @@ export function up(knex) {
       .inTable("activities")
       .onUpdate("CASCADE")
       .onDelete("CASCADE");
+    table.datetime("activity_start", { useTz: false, precision: 0 });
+    table.datetime("activity_end", { useTz: false, precision: 0 });
     table.integer("rpe_value").nullable();
+    table.integer("created_by");
+    table
+      .foreign("created_by")
+      .references("id")
+      .inTable("user_teams")
+      .onUpdate("CASCADE")
+      .onDelete("CASCADE");
     table
       .timestamp("created_at", { useTz: true, precision: 0 })
       .defaultTo(knex.fn.now(0));
@@ -148,7 +149,7 @@ export function up(knex) {
   })
 
   .createTable("equipment", function(table) {
-    table.increments("id").primary().notNullable();
+    table.increments("id").primary();
     table.string("equipment_name", 100).unique();
     table.string("equipment_info").nullable();
     table.enu("training_modality", ["Cardio", "Strength"]);
@@ -168,7 +169,7 @@ export function up(knex) {
   })
 
   .createTable("exercises", function(table) {
-    table.increments("id").primary().notNullable();
+    table.increments("id").primary();
     table.string("exercise_name", 100).unique();
     table.text("exercise_info").nullable();
     table.integer("created_by");
@@ -241,25 +242,16 @@ export function down(knex) {
   console.log("Knex/DB - DROP TABLES");
   
   return knex.schema
+  .dropTableIfExists("user_activities")
   .dropTableIfExists("user_teams")
   .dropTableIfExists("user_information")
   .dropTableIfExists("exercise_sets")
-  .dropTableIfExists("user_activities")
   .dropTableIfExists("activities")
   .dropTableIfExists("exercises_equipment")
   .dropTableIfExists("exercises")
   .dropTableIfExists("equipment")
   .dropTableIfExists("teams")
   .dropTableIfExists("users")
-/*   await knex.raw('DROP TABLE IF EXISTS user_teams CASCADE');
-  await knex.raw('DROP TABLE IF EXISTS user_information CASCADE');
-  await knex.raw('DROP TABLE IF EXISTS exercise_sets CASCADE');
-  await knex.raw('DROP TABLE IF EXISTS activities CASCADE');
-  await knex.raw('DROP TABLE IF EXISTS exercises_equipment CASCADE');
-  await knex.raw('DROP TABLE IF EXISTS exercises CASCADE');
-  await knex.raw('DROP TABLE IF EXISTS equipment CASCADE');
-  await knex.raw('DROP TABLE IF EXISTS users CASCADE');
-  await knex.raw('DROP TABLE IF EXISTS teams CASCADE'); */
 };
 
 

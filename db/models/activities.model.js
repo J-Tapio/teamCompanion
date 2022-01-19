@@ -17,16 +17,18 @@ class Activity extends Model {
   static get jsonSchema() {
     return {
       type: "object",
-      required: ["userId", "activityType", "activityStart", "activityEnd"],
+      required: ["activity_type"],
       properties: {
         id: { type: "integer" },
-        userId: { type: "integer" },
         activityType: {
-          enum: ["rehabilitation", "fitness", "teamPractice", "match"],
+          enum: [
+            "Rehabilitation", 
+            "Fitness", 
+            "TeamPractise", 
+            "TeamMeeting", 
+            "TeamMatch"
+        ],
         },
-        activityStart: { type: "date-time" },
-        activityEnd: { type: "date-time" },
-        rpeValue: {type: "integer", minValue: 1, maxValue: 10}
       },
     };
   }
