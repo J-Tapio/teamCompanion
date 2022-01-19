@@ -124,8 +124,6 @@ describe("/users controller tests", () => {
           })
           .set("authorization", `Bearer ${athleteUserToken}`);
 
-        //console.log(res.body);
-
         expect(res.statusCode).to.eql(200);
         expect(res.body).to.have.all.keys(
           "id",

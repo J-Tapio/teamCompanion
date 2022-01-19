@@ -54,7 +54,6 @@ describe("::: TEAMS CONTROLLER TESTS :::", () => {
   () => {
     it("Should return status 400 without token in headers", async () => {
       const res = await chai.requester.get("/exercises");
-      console.log("Error message", res.body);
       expect(res.statusCode).to.eql(400);
     });
 
