@@ -32,10 +32,10 @@ export default {
   production: {
     client: "pg",
     connection: {
-      database: "teamcompanion_db",
-      user: "teamcompanion_admin",
-      password: "teamcompanion_admin",
-      host: "localhost",
+      database: "",
+      user: "",
+      password: "",
+      host: "",
       port: 5432,
     },
     pool: {
