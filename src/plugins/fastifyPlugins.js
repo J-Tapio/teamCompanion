@@ -1,4 +1,5 @@
 import UserTeams from "../../db/models/userTeams.model.js";
+import UserActivities from "../../db/models/userActivities.model.js";
 import fastifyJwt from "fastify-jwt";
 import errorHandler from "../tools/dbErrors.js";
 import dotenv from "dotenv";
@@ -64,4 +65,28 @@ export async function checkTrainingAdminRolePlugin(fastify, options) {
       errorHandler(error, reply);
     }
   });
+}
+
+export async function checkActivitiesPriviledgePlugin(fastify, options) {
+  fastify.decorate("checkActivitiesPriviledge", async function(request, reply) {
+    try {
+      const allowedRoleRoutes = {
+        Athlete: ["/activities/team/me"],
+        Coach: ["/activities/team/me", "/activities/team/:teamId"],
+        Trainer: ["/activities/team/me", "/activities/team/:teamId"],
+        Physio: ["/activities/team/me", "/activities/team/:teamId"],
+      };
+
+      // Check for user_id and team_role from userTeams via userActivities
+      // Check Request method
+      // UPDATE / DELETE Only allowed if created by the request making user.
+
+
+
+      if(!request.user.roles.includes("admin")) {
+      }
+    } catch (error) {
+      
+    }
+  })
 }

@@ -10,7 +10,7 @@ export default [
   {
     method: "GET",
     url: "/equipment",
-    //schema: equipmentSchemas.allEquipment,
+    schema: equipmentSchemas.allEquipment,
     preValidation: authenticateUser,
     preHandler: checkTrainingAdminRole,
     handler: equipmentHandlers.allEquipment,

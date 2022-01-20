@@ -1,5 +1,6 @@
 import { Model } from "objection";
 
+
 class UserTeams extends Model {
   static get tableName() {
     return "user_teams";
