@@ -40,7 +40,7 @@ describe("::: EQUIPMENT CONTROLLER TESTS :::", () => {
   });
 
   
-  describe(":::With invalid / missing token / no priviledges:::", () => {
+  describe("::With invalid / missing token / no priviledges:::", () => {
       it("Should return status 400 without token in headers", async () => {
         const res = await chai.requester.get("/equipment");
         expect(res.statusCode).to.eql(400);
