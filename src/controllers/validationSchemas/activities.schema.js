@@ -1,104 +1,148 @@
 import errors from "./errors.js";
 
-const allActivities = {
+const allTeamActivities = {
   response: {
     200: {
       type: "object",
-      required: ["count", "data"],
       properties: {
         count: { type: "integer" },
-        data: { type: "array" },
-        items: {
-          type: "object",
-          properties: {
-            id: { type: "integer" },
-            userId: { type: "integer" },
-            teamId: { type: "integer" },
-            activityStart: { type: "string", format: "date-time" },
-            activityEnd: { type: "string", format: "date-time" },
-            rpeValue: { type: ["integer", null] },
-            createdBy: { type: "integer" },
-          },
+        data: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              id: { type: "integer" },
+              activityId: { type: "integer" },
+              activityType: { type: "string" },
+              activityStart: {type: "string", format: "date-time"},
+              activityEnd: {type: "string", format: "date-time"},
+              rpeValue: { type: "integer" },
+              athlete: {
+                userId: { type: "integer" },
+                userTeamId: { type: "integer" },
+                firstName: { type: "string" },
+                lastName: { type: "string" },
+                teamRole: { type: "string" },
+              },
+              createdBy: {
+                userId: { type: "integer" },
+                userTeamId: { type: "integer" },
+                firstName: { type: "string" },
+                lastName: { type: "string" },
+                teamRole: { type: "string" },
+              }
+            }
+          }
+        }
+      }
+    },
+    ...errors
+  },
+};
+
+const teamActivityById = {
+  response: {
+    200: {
+      type: "object",
+      properties: {
+        id: { type: "integer" },
+        activityId: { type: "integer" },
+        activityType: { type: "string" },
+        activityStart: { type: "string", format: "date-time" },
+        activityEnd: { type: "string", format: "date-time" },
+        rpeValue: { type: "integer" },
+        athlete: {
+          userId: { type: "integer" },
+          userTeamId: { type: "integer" },
+          firstName: { type: "string" },
+          lastName: { type: "string" },
+          teamRole: { type: "string" },
+        },
+        createdBy: {
+          userId: { type: "integer" },
+          userTeamId: { type: "integer" },
+          firstName: { type: "string" },
+          lastName: { type: "string" },
+          teamRole: { type: "string" },
         },
       },
     },
-    ...errors
   },
 };
 
-const newActivity = {
-  request: {
-    body: {
-      type: "object",
-      required: [
-        "userId",
-        "teamId",
-        "activityStart",
-        "activityEnd",
-        "rpeValue",
-      ],
-      properties: {
-        id: { type: "integer" },
-        userId: { type: "integer" },
-        teamId: { type: "integer" },
-        activityStart: { type: "string", format: "date-time" },
-        activityEnd: { type: "string", format: "date-time" },
-        rpeValue: { type: ["integer", null] },
-      },
-    },
+const newTeamActivity = {
+  request:{
+    type: "object",
+    required: ["athlete_id", "activity_id", "activity_start", "activity_end", "created_by"],
+    properties: {
+      id: { type: "integer" },
+      athleteId: { type: "integer" },
+      activityId: { type: "integer" },
+      activityStart: { type: "string", format: "date-time" },
+      activityEnd: { type: "string", format: "date-time" },
+      rpeValue: {type: "integer", minValue: 1, maxValue: 10 },
+      createdBy: { type: "integer" },
+    }
   },
   response: {
     200: {
       type: "object",
       properties: {
         id: { type: "integer" },
-        userId: { type: "integer" },
-        teamId: { type: "integer" },
+        athleteId: { type: "integer" },
+        activityId: { type: "integer" },
         activityStart: { type: "string", format: "date-time" },
         activityEnd: { type: "string", format: "date-time" },
-        rpeValue: { type: ["integer", null] },
+        rpeValue: {type: "integer", minValue: 1, maxValue: 10 },
         createdBy: { type: "integer" },
-        createdAt: { type: "string", format: "date-time" },
-      },
+        updatedAt: { type: "string", format: "date-time" }
+      }
     },
     ...errors
-  },
-};
+  }
+}
 
-const updateActivity = {
+const updateTeamActivity = {
   request: {
-    body: {
-      type: "object",
-      properties: {
-        id: { type: "integer" },
-        userId: { type: "integer" },
-        teamId: { type: "integer" },
-        activityStart: { type: "string", format: "date-time" },
-        activityEnd: { type: "string", format: "date-time" },
-        rpeValue: { type: ["integer", null] },
-      },
+    type: "object",
+    properties: {
+      athleteId: { type: "integer" },
+      activityId: { type: "integer" },
+      activityStart: { type: "string", format: "date-time" },
+      activityEnd: { type: "string", format: "date-time" },
+      rpeValue: { type: "integer", minValue: 1, maxValue: 10 },
+      createdBy: { type: "integer" },
+      updatedAt: { type: "string", format: "date-time" },
     },
   },
   response: {
     200: {
       type: "object",
       properties: {
-        id: { type: "integer" },
-        userId: { type: "integer" },
-        teamId: { type: "integer" },
+        athleteId: { type: "integer" },
+        activityId: { type: "integer" },
         activityStart: { type: "string", format: "date-time" },
         activityEnd: { type: "string", format: "date-time" },
-        rpeValue: { type: ["integer", null] },
+        rpeValue: { type: "integer", minValue: 1, maxValue: 10 },
         createdBy: { type: "integer" },
         updatedAt: { type: "string", format: "date-time" },
       },
     },
-    ...errors
-  },
-};
-
-const deleteActivity = {
-  response: {
     ...errors,
   },
 };
+
+const deleteTeamActivity = {
+  response: {
+    ...errors
+  }
+}
+
+
+export default {
+  allTeamActivities,
+  teamActivityById,
+  newTeamActivity,
+  updateTeamActivity,
+  deleteTeamActivity
+}

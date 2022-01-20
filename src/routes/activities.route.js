@@ -1,5 +1,7 @@
 import validationHandlers from "../controllers/preValidation/preValidators.js";
 import preHandlers from "../controllers/preHandlers/preHandlers.js";
+import activitiesSchema from "../controllers/validationSchemas/activities.schema.js";
+import userActivitiesHandler from "../controllers/activities.controller.js"
 const { authenticateUser } = validationHandlers;
 const { checkAdminRole } = preHandlers;
 
@@ -8,10 +10,10 @@ export default [
   { // All activities
     method: "GET",
     url: "/activities/team/:teamId", //TODO: Query params filtering later.
-    schema: ,
+    schema: activitiesSchema.allTeamActivities,
     preValidation: authenticateUser,
     preHandler: , //! Coach / Trainer / Physio / Staff
-    handler: ,
+    handler: userActivitiesHandler.allActivities,
     config: {
       description: "Retrieve activities of the team",
     },
@@ -24,24 +26,24 @@ export default [
     preHandler: , //! Coach / Trainer / Physio / Staff
     handler: ,
     config: {
-      description: "Retrieve activities of the team",
+      description: "Retrieve assigned activities of user",
     },
   },
   {
     method: "GET",
     url: "/activities/team/:teamId/:athleteId",
-    schema: ,
+    schema: activitiesSchema.teamActivityById,
     preValidation: authenticateUser,
     preHandler: , //! Coach / Trainer / Physio
     handler: ,
     config: {
-      description: "",
+      description: "Retrieve assigned activites of a user by id",
     },
   },
   {
     method: "POST",
     url: "/activities/team/:teamId",
-    schema: ,
+    schema: activitiesSchema.newTeamActivity,
     preValidation: authenticateUser,
     preHandler: , //! Coach / Trainer / Physio
     handler: ,
@@ -52,23 +54,23 @@ export default [
   {
     method: "PUT",
     url: "/activities/team/:teamId/:activityId",
-    schema: ,
+    schema: activitiesSchema.updateTeamActivity,
     preValidation: authenticateUser,
     preHandler: , //! Coach / Trainer / Physio
     handler: ,
     config: {
-      description: "Retrieve user's team activities",
+      description: "Update assigned athlete activity",
     },
   },
   {
     method: "DELETE",
     url: "/activities/team/:teamId/:activityId",
-    schema: ,
+    schema: activitiesSchema.deleteTeamActivity,
     preValidation: authenticateUser,
     preHandler: , //! Coach / Trainer / Physio
     handler: ,
     config: {
-      description: "Retrieve user's team activities",
+      description: "Delete ",
     },
   },
 ];

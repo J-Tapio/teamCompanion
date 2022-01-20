@@ -47,7 +47,7 @@ describe("::: ACTIVITIES CONTROLLER TESTS :::", () => {
       it.only("Test db", async() => {
 
         const staffInfo = await UserActivities.query()
-          .joinRelated({activities: true})
+          .joinRelated({ activities: true })
           .select(
             "userActivities.id",
             "userActivities.athleteId",
@@ -59,15 +59,38 @@ describe("::: ACTIVITIES CONTROLLER TESTS :::", () => {
             "userActivities.createdBy",
             "staff.firstName as staffFirstName",
             "staff.LastName as staffLastName",
+            "staffTeam.teamRole as staffTeamRole",
+            "staff.userId as staffId",
             "athlete.firstName as athleteFirstName",
-            "athlete.lastName as athleteLastName"
+            "athlete.lastName as athleteLastName",
+            "athlete.userId as athleteUserId",
+            "athleteTeam.teamRole as athleteRole",
+            "athleteTeam.status as athleteStatus"
           )
-          .join("userTeams as staffTeam", "userActivities.createdBy", "=", "staffTeam.id")
-          .innerJoin("userInformation as staff", "staffTeam.userId", "=", "staff.userId")
-          .join("userTeams as athleteTeam", "userActivities.athleteId", "=",
-          "athleteTeam.id")
-          .innerJoin("userInformation as athlete", "athleteTeam.userId", "=",
-          "athlete.userId")
+          .join(
+            "userTeams as staffTeam",
+            "userActivities.createdBy",
+            "=",
+            "staffTeam.id"
+          )
+          .innerJoin(
+            "userInformation as staff",
+            "staffTeam.userId",
+            "=",
+            "staff.userId"
+          )
+          .join(
+            "userTeams as athleteTeam",
+            "userActivities.athleteId",
+            "=",
+            "athleteTeam.id"
+          )
+          .innerJoin(
+            "userInformation as athlete",
+            "athleteTeam.userId",
+            "=",
+            "athlete.userId"
+          )
 
           console.log(staffInfo);
         })
