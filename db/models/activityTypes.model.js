@@ -1,8 +1,8 @@
 import { Model } from "objection";
 
-class Activity extends Model {
+class ActivityTypes extends Model {
   static get tableName() {
-    return "activities";
+    return "activityTypes";
   }
 
   $beforeInsert() {
@@ -17,21 +17,14 @@ class Activity extends Model {
   static get jsonSchema() {
     return {
       type: "object",
-      required: ["activity_type"],
+      required: ["activity_type", "createdBy"],
       properties: {
         id: { type: "integer" },
-        activityType: {
-          enum: [
-            "Rehabilitation", 
-            "Fitness", 
-            "TeamPractise", 
-            "TeamMeeting", 
-            "TeamMatch"
-        ],
-        },
+        activityType: { type:"string" },
+        createdBy: { type: "integer" }
       },
     };
   }
 }
 
-export default Activity;
+export default ActivityTypes;

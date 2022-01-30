@@ -1,9 +1,10 @@
 import { Model } from "objection";
+import UserTeamActivities from "./userTeamActivities.model.js";
 
 
 class UserTeams extends Model {
   static get tableName() {
-    return "user_teams";
+    return "userTeams";
   }
 
   $beforeInsert() {
@@ -29,6 +30,23 @@ class UserTeams extends Model {
         status: { enum: ["Active", "Injured", "Inactive", "Vacation", "Sick"] },
       },
     };
+  }
+
+  static get relationMappings() {
+    return {
+      userTeamActivities: {
+        relation: Model.HasOneThroughRelation,
+        modelClass: UserTeamActivities,
+        join: {
+          from: "userTeams.id",
+          through: {
+            from: "userTeamActivities.userTeamId",
+            to: "userTeamActivities.teamActivityId",
+          },
+          to: "teamActivities.id"
+        }
+      }
+    }
   }
 }
 

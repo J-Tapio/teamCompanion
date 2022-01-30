@@ -1,74 +1,99 @@
 import validationHandlers from "../controllers/preValidation/preValidators.js";
 import preHandlers from "../controllers/preHandlers/preHandlers.js";
+import activitiesHandlers from "../controllers/activities.controller.js"
+import activitiesSchemas from "../controllers/validationSchemas/activities.schema.js";
 const { authenticateUser } = validationHandlers;
-const { checkAdminRole } = preHandlers;
+const { checkActivitiesPriviledge } = preHandlers;
+
+//TODO: Query parameters.
 
 export default [
-
-  { // All activities
+  {
     method: "GET",
-    url: "/activities/team/:teamId", //TODO: Query params filtering later.
-    schema: ,
+    url: "/activities/team/:teamId",
+    schema: activitiesSchemas.allTeamActivities,
     preValidation: authenticateUser,
-    preHandler: , //! Coach / Trainer / Physio / Staff
-    handler: ,
+    preHandler: checkActivitiesPriviledge,
+    handler: activitiesHandlers.allTeamActivities,
     config: {
-      description: "Retrieve activities of the team",
+      description: "Retrieve created activities of the team",
     },
   },
   {
     method: "GET",
-    url: "/activities/team/:teamId/me", //User's assigned activities
-    schema: ,
+    url: "/activities/team/:teamId/activity/:activityId",
+    schema: activitiesSchemas.teamActivityById,
     preValidation: authenticateUser,
-    preHandler: , //! Coach / Trainer / Physio / Staff
-    handler: ,
+    preHandler: checkActivitiesPriviledge,
+    handler: activitiesHandlers.teamActivityById,
     config: {
-      description: "Retrieve activities of the team",
+      description: "Retrieve activity by id",
     },
   },
   {
     method: "GET",
-    url: "/activities/team/:teamId/:athleteId",
-    schema: ,
+    url: "/activities/team/:teamId/member/:userTeamId",
+    schema: activitiesSchemas.teamActivitiesByUserTeamId,
     preValidation: authenticateUser,
-    preHandler: , //! Coach / Trainer / Physio
-    handler: ,
+    preHandler: checkActivitiesPriviledge,
+    handler: activitiesHandlers.teamActivitiesByUserTeamId,
     config: {
-      description: "",
+      description: "Retrieve athlete activities",
     },
   },
   {
     method: "POST",
     url: "/activities/team/:teamId",
-    schema: ,
+    schema: activitiesSchemas.createTeamActivity,
     preValidation: authenticateUser,
-    preHandler: , //! Coach / Trainer / Physio
-    handler: ,
+    preHandler: checkActivitiesPriviledge,
+    handler: activitiesHandlers.createTeamActivity,
     config: {
-      description: "Create activity for team member(s)",
+      description: "Create activity for team",
     },
   },
   {
     method: "PUT",
-    url: "/activities/team/:teamId/:activityId",
-    schema: ,
+    url: "/activities/team/:teamId/activity/:activityId",
+    schema: activitiesSchemas.updateTeamActivity,
     preValidation: authenticateUser,
-    preHandler: , //! Coach / Trainer / Physio
-    handler: ,
+    preHandler: checkActivitiesPriviledge,
+    handler: activitiesHandlers.updateTeamActivity,
     config: {
-      description: "Retrieve user's team activities",
+      description: "Update team activity by id",
     },
   },
   {
     method: "DELETE",
-    url: "/activities/team/:teamId/:activityId",
-    schema: ,
+    url: "/activities/team/:teamId/activity/:activityId",
+    schema: activitiesSchemas.deleteTeamActivity,
     preValidation: authenticateUser,
-    preHandler: , //! Coach / Trainer / Physio
-    handler: ,
+    preHandler: checkActivitiesPriviledge,
+    handler: activitiesHandlers.deleteTeamActivity,
     config: {
-      description: "Retrieve user's team activities",
+      description: "Delete team activity by id",
+    },
+  },
+  {
+    method: "POST",
+    url: "/activities/team/:teamId/activity/:activityId/participants",
+    schema: activitiesSchemas.insertActivityParticipants,
+    preValidation: authenticateUser,
+    preHandler: checkActivitiesPriviledge,
+    handler: activitiesHandlers.insertActivityParticipants,
+    config: {
+      description: "Add participant(s) to team activity",
+    },
+  },
+  {
+    method: "PUT",
+    url: "/activities/team/:teamId/activity/:activityId/participants",
+    schema: activitiesSchemas.deleteActivityParticipants,
+    preValidation: authenticateUser,
+    preHandler: checkActivitiesPriviledge,
+    handler: activitiesHandlers.deleteActivityParticipants,
+    config: {
+      description: "Delete participant(s) from team activity",
     },
   },
 ];

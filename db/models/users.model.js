@@ -30,25 +30,27 @@ class Users extends Model {
     };
   }
 
-  static relationMappings = {
-    teams: {
-      relation: Model.ManyToManyRelation,
-      modelClass: Teams,
-      join: {
-        from: "users.id",
-        through: {
-          from: "user_teams.user_id",
-          to: "user_teams.team_id",
+  static get relationMappings() {
+    return {
+      teams: {
+        relation: Model.ManyToManyRelation,
+        modelClass: Teams,
+        join: {
+          from: "users.id",
+          through: {
+            from: "user_teams.user_id",
+            to: "user_teams.team_id",
+          },
+          to: "teams.id",
         },
-        to: "teams.id",
       },
-    },
-    userInformation: {
-      relation: Model.HasOneRelation,
-      modelClass: UserInformation,
-      join: {
-        from: "users.id",
-        to: "user_information.user_id"
+      userInformation: {
+        relation: Model.HasOneRelation,
+        modelClass: UserInformation,
+        join: {
+          from: "users.id",
+          to: "user_information.user_id"
+        }
       }
     }
   };

@@ -1,8 +1,6 @@
 import { Model } from "objection";
 import Equipment from "./equipment.model.js";
 
-//const modelFolderPath = dirname(fileURLToPath(import.meta.url));
-
 class Exercises extends Model {
   static get tableName() {
     return "exercises";

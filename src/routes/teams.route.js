@@ -28,7 +28,7 @@ export default [
       description: "Create new team",
     },
   },
-  {
+  {// TODO: Consider just changing to /teams/:userId
     method: "GET",
     url: "/teams/me",
     preValidation: authenticateUser,

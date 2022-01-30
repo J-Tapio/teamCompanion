@@ -18,7 +18,7 @@ services:
     volumes:
       - ./.pg_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: teamcompanion_db
-      POSTGRES_PASSWORD: salasana
-      POSTGRES_USER: postgres
-      ADMINPWD: dev_200321!
+      POSTGRES_DB: 
+      POSTGRES_PASSWORD: 
+      POSTGRES_USER: 
+      ADMINPWD: 

@@ -295,24 +295,31 @@ describe("::: TEAMS CONTROLLER TESTS :::", () => {
         expect(res1.body.teams[0]).to.have.all.keys(
           "teamId", 
           "teamName", 
-          "teamRole"
+          "teamRole",
+          "userTeamId"
         );
-        expect(res1.body.teams[0].teamId).to.eql(1)
-        expect(res1.body.teams[0].teamName).to.eql("Murcia FC")
-        expect(res1.body.teams[0].teamRole).to.eql("Athlete")
+        expect(res1.body.teams[0].teamId).to.eql(1);
+        expect(res1.body.teams[0].teamName).to.eql("Murcia FC");
+        expect(res1.body.teams[0].teamRole).to.eql("Athlete");
+        expect(res1.body.teams[0].userTeamId).to.eql(5);
 
         const res2 = await chai.requester
           .get("/teams/me")
           .set("authorization", `Bearer ${physioUserToken}`);
+
+        console.log(res2.body);
+
         expect(res2.statusCode).to.eql(200);
         expect(res2.body).to.haveOwnProperty("teams");
         expect(res2.body.teams).to.be.ofSize(2);
         expect(res2.body.teams[0].teamId).to.eql(1);
         expect(res2.body.teams[0].teamName).to.eql("Murcia FC");
         expect(res2.body.teams[0].teamRole).to.eql("Physiotherapist");
+        expect(res2.body.teams[0].userTeamId).to.eql(3);
         expect(res2.body.teams[1].teamId).to.eql(2);
         expect(res2.body.teams[1].teamName).to.eql("Barcelona FC");
         expect(res2.body.teams[1].teamRole).to.eql("Coach");
+        expect(res2.body.teams[1].userTeamId).to.eql(4);
       });
     });
 
