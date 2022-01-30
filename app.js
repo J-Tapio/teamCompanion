@@ -2,7 +2,6 @@ import dotenv from "dotenv";
 import Knex from "knex";
 import { Model } from "objection";
 import Fastify from "fastify";
-//import middie from "middie";
 import fastifyCors from "fastify-cors";
 import fastifySwagger from "fastify-swagger";
 import fastifyPrintRoutes from "fastify-print-routes";
@@ -33,7 +32,7 @@ const fastify = Fastify({
   }
 });
 
-//fastify.register(middie);
+
 fastify.register(fastifyCors); // Specify whitelist later.
 fastify.register(fastifyPrintRoutes);
 fastify.register(fastifySwagger, {
