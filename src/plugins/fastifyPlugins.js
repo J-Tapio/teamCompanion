@@ -1,8 +1,10 @@
 import UserTeams from "../../db/models/userTeams.model.js";
-import UserActivities from "../../db/models/userActivities.model.js";
 import fastifyJwt from "fastify-jwt";
 import errorHandler from "../tools/dbErrors.js";
 import dotenv from "dotenv";
+import TeamActivities from "../../db/models/teamActivities.model.js";
+import UserTeamActivities from "../../db/models/userTeamActivities.model.js";
+import _ from "lodash";
 
 dotenv.config({ path: "../../.env" });
 
@@ -68,25 +70,79 @@ export async function checkTrainingAdminRolePlugin(fastify, options) {
 }
 
 export async function checkActivitiesPriviledgePlugin(fastify, options) {
-  fastify.decorate("checkActivitiesPriviledge", async function(request, reply) {
+  fastify.decorateRequest("checkActivitiesPriviledge", async function(request, reply) {
     try {
-      const allowedRoleRoutes = {
-        Athlete: ["/activities/team/me"],
-        Coach: ["/activities/team/me", "/activities/team/:teamId"],
-        Trainer: ["/activities/team/me", "/activities/team/:teamId"],
-        Physio: ["/activities/team/me", "/activities/team/:teamId"],
-      };
 
-      // Check for user_id and team_role from userTeams via userActivities
-      // Check Request method
-      // UPDATE / DELETE Only allowed if created by the request making user.
+      let teamRoles = [
+        "Coach", "Trainer", "Physiotherapist", "Staff", "Athlete"
+      ]
+
+      let allowedRolesAndMethods = new Map();
+      allowedRolesAndMethods
+        .set("/activities/team/:teamId", {
+          GET: _.without(teamRoles, "Athlete"),
+          POST: _.without(teamRoles, "Athlete"),
+        })
+        .set("/activities/team/:teamId/activity/:activityId", {
+          GET: teamRoles,
+          PUT: _.without(teamRoles, "Athlete"),
+          DELETE: _.without(teamRoles, "Athlete"),
+        })
+        .set("/activities/team/:teamId/member/:userTeamId", {
+          GET: teamRoles,
+        })
+        .set("/activities/team/:teamId/activity/:activityId/participants", {
+          POST: _.without(teamRoles, "Athlete"),
+          PUT: _.without(teamRoles, "Athlete"),
+        });
 
 
+      if (!request.user.roles.includes("admin")) {
+        // Check the teamRole of a user:
+        const teamMember = await UserTeams.query()
+          .select("id", "teamRole")
+          .where({
+            teamId: request.params.teamId,
+            userId: request.user.id,
+          })
+          .first();
 
-      if(!request.user.roles.includes("admin")) {
+        if(!teamMember) {
+          // Request user not part of the team
+          reply.forbidden();
+        } else {
+          const {id, teamRole} = teamMember;
+          // Requested route & method
+          const route = request.context.config.url;
+          const method = request.method;
+          // Athlete should be only allowed to see activities where participant
+          if (
+            teamRole === "Athlete" && 
+            allowedRolesAndMethods.get(route)[method].includes("Athlete")
+          ) {
+            let isParticipantOfActivity = await UserTeamActivities.query()
+              .where({
+                userTeamId: id,
+                teamActivityId: request.params.activityId,
+              })
+              .returning("id")
+              .first();
+
+            !isParticipantOfActivity && reply.forbidden();
+          } else {
+            // Check the priviledges per method & route of HTTP-request:
+            // Include additional information to user property on request
+            allowedRolesAndMethods.get(route)[method].includes(teamRole) &&
+            ((request.user.teamRole = teamRole),
+            (request.user.userTeamId = id));
+
+            !allowedRolesAndMethods.get(route)[method].includes(teamRole) &&
+            reply.forbidden();
+          }
+        }
       }
     } catch (error) {
-      
+      errorHandler(error, reply);
     }
   })
 }

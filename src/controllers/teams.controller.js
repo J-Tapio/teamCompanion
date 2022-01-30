@@ -70,13 +70,15 @@ async function usersTeams(request, reply) {
     const teams = await Teams.query()
       .joinRelated("userTeams")
       .select(
-        "teams.id as teamId", 
+        "user_teams_join.id as userTeamId",
+        "teams.id as teamId",
         "teams.teamName",
         "teamRole"
       )
-      .where("userId", request.user.id)
+      .where("user_teams_join.userId", request.user.id)
       .orderBy("teamId", "asc")
       .throwIfNotFound();
+      
     reply.send({teams})
   } catch (error) {
     errorHandler(error, reply);

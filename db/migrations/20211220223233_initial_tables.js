@@ -96,42 +96,9 @@ export function up(knex) {
       .defaultTo(knex.fn.now(0));
   })
 
-  .createTable("activities", function(table) {
+  .createTable("activity_types", function(table) {
     table.increments("id").primary();
-    table.enu("activity_type", [
-      "Rehabilitation", 
-      "Fitness", 
-      "TeamPractise",
-      "TeamMeeting", 
-      "TeamMatch"
-    ]);
-    table
-      .timestamp("created_at", { useTz: true, precision: 0 })
-      .defaultTo(knex.fn.now(0));
-    table
-      .timestamp("updated_at", { useTz: true, precision: 0 })
-      .defaultTo(knex.fn.now(0));
-  })
-
-  .createTable("user_activities", function(table) {
-    table.increments("id").primary();
-    table.integer("athlete_id");
-    table
-      .foreign("athlete_id")
-      .references("id")
-      .inTable("user_teams")
-      .onUpdate("CASCADE")
-      .onDelete("CASCADE");
-    table.integer("activity_id");
-    table
-      .foreign("activity_id")
-      .references("id")
-      .inTable("activities")
-      .onUpdate("CASCADE")
-      .onDelete("CASCADE");
-    table.datetime("activity_start", { useTz: false, precision: 0 });
-    table.datetime("activity_end", { useTz: false, precision: 0 });
-    table.integer("rpe_value").nullable();
+    table.string("activity_type");
     table.integer("created_by");
     table
       .foreign("created_by")
@@ -145,7 +112,93 @@ export function up(knex) {
     table
       .timestamp("updated_at", { useTz: true, precision: 0 })
       .defaultTo(knex.fn.now(0));
-    
+  })
+
+  .createTable("venues", function(table) {
+    table.increments("id").primary();
+    table.string("venue_name");
+    table.string("street_address", 255);
+    table.string("city", 100);
+    table.string("zip_code", 100);
+    table.string("state", 100);
+    table.enu("country", countries);
+    table.integer("teamId");
+    table
+      .foreign("teamId")
+      .references("id")
+      .inTable("teams")
+      .onUpdate("CASCADE")
+      .onDelete("CASCADE");
+  })
+
+  .createTable("team_activities", function(table) {
+    table.increments("id").primary();
+    table.integer("team_id");
+    table
+      .foreign("team_id")
+      .references("id")
+      .inTable("teams")
+      .onUpdate("CASCADE")
+      .onDelete("CASCADE");
+    table.integer("created_by");
+    table
+      .foreign("created_by")
+      .references("id")
+      .inTable("user_teams")
+      .onUpdate("CASCADE")
+      .onDelete("CASCADE");
+    table.integer("activity_type_id");
+    table
+      .foreign("activity_type_id")
+      .references("id")
+      .inTable("activity_types")
+      .onUpdate("CASCADE")
+      .onDelete("CASCADE");
+    table.string("opponent_name").nullable();
+    table.string("opponent_logo").nullable();
+    table.string("activity_notes").nullable();
+    table.integer("venue_id").nullable();
+    table
+      .foreign("venue_id")
+      .references("id")
+      .inTable("venues")
+      .onUpdate("CASCADE")
+      .onDelete("CASCADE");
+    table.datetime("activity_start", { useTz: true, precision: 0 });
+    table.datetime("activity_end", { useTz: true, precision: 0 });
+    table.integer("updated_by").nullable();
+    table
+      .timestamp("created_at", { useTz: true, precision: 0 })
+      .defaultTo(knex.fn.now(0));
+    table
+      .timestamp("updated_at", { useTz: true, precision: 0 })
+      .defaultTo(knex.fn.now(0));
+  })
+
+  .createTable("user_team_activities", function(table) {
+    table.increments("id").primary();
+    table.integer("user_team_id");
+    table
+      .foreign("user_team_id")
+      .references("id")
+      .inTable("user_teams")
+      .onUpdate("CASCADE")
+      .onDelete("CASCADE");
+    table.integer("team_activity_id");
+    table
+      .foreign("team_activity_id")
+      .references("id")
+      .inTable("team_activities")
+      .onUpdate("CASCADE")
+      .onDelete("CASCADE");
+    table.unique(["user_team_id", "team_activity_id"])
+    table.integer("rpe_value").nullable();
+    table
+      .timestamp("created_at", { useTz: true, precision: 0 })
+      .defaultTo(knex.fn.now(0));
+    table
+      .timestamp("updated_at", { useTz: true, precision: 0 })
+      .defaultTo(knex.fn.now(0));
   })
 
   .createTable("equipment", function(table) {
@@ -216,11 +269,11 @@ export function up(knex) {
 
   .createTable("exercise_sets", function(table) {
     table.increments("id").primary();
-    table.integer("activity_id").notNullable();
+    table.integer("user_team_activities_id").notNullable();
     table
-      .foreign("activity_id")
+      .foreign("user_team_activities_id")
       .references("id")
-      .inTable("activities")
+      .inTable("user_team_activities")
       .onUpdate("CASCADE")
       .onDelete("CASCADE");
     table.integer("exercises_equipment_id").notNullable();
@@ -242,14 +295,16 @@ export function down(knex) {
   console.log("Knex/DB - DROP TABLES");
   
   return knex.schema
-  .dropTableIfExists("user_activities")
-  .dropTableIfExists("user_teams")
-  .dropTableIfExists("user_information")
   .dropTableIfExists("exercise_sets")
-  .dropTableIfExists("activities")
+  .dropTableIfExists("user_team_activities")
+  .dropTableIfExists("team_activities")
+  .dropTableIfExists("activity_types")
+  .dropTableIfExists("user_teams")
   .dropTableIfExists("exercises_equipment")
   .dropTableIfExists("exercises")
   .dropTableIfExists("equipment")
+  .dropTableIfExists("user_information")
+  .dropTableIfExists("venues")
   .dropTableIfExists("teams")
   .dropTableIfExists("users")
 };

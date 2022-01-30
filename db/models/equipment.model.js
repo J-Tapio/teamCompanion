@@ -1,6 +1,4 @@
 import { Model } from "objection";
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
 import Exercises from "./exercises.model.js";
 
 //const modelFolderPath = dirname(fileURLToPath(import.meta.url));

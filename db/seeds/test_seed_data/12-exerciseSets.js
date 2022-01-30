@@ -1,7 +1,7 @@
 export default [
   {
     id: 1,
-    activity_id: 1,
+    user_team_activities_id: 1,
     exercises_equipment_id: 1,
     ex_weight: null,
     ex_repetitions: null,
@@ -10,7 +10,7 @@ export default [
   },
   {
     id: 2,
-    activity_id: 1,
+    user_team_activities_id: 1,
     exercises_equipment_id: 3,
     ex_weight: 60,
     ex_repetitions: 10,
@@ -19,7 +19,7 @@ export default [
   },
   {
     id: 3,
-    activity_id: 1,
+    user_team_activities_id: 1,
     exercises_equipment_id: 3,
     ex_weight: 70,
     ex_repetitions: 10,
@@ -29,7 +29,7 @@ export default [
   },
   {
     id: 4,
-    activity_id: 1,
+    user_team_activities_id: 1,
     exercises_equipment_id: 3,
     ex_weight: 90,
     ex_repetitions: 10,
@@ -39,7 +39,7 @@ export default [
   },
   {
     id: 5,
-    activity_id: 1,
+    user_team_activities_id: 1,
     exercises_equipment_id: 4,
     ex_weight: 20,
     ex_repetitions: 10,
@@ -48,7 +48,7 @@ export default [
   },
   {
     id: 6,
-    activity_id: 1,
+    user_team_activities_id: 1,
     exercises_equipment_id: 4,
     ex_weight: 20,
     ex_repetitions: 10,
@@ -57,7 +57,7 @@ export default [
   },
   {
     id: 7,
-    activity_id: 1,
+    user_team_activities_id: 1,
     exercises_equipment_id: 4,
     ex_weight: 20,
     ex_repetitions: 10,
@@ -66,7 +66,7 @@ export default [
   },
   {
     id: 8,
-    activity_id: 4,
+    user_team_activities_id: 4,
     exercises_equipment_id: 2,
     ex_weight: null,
     ex_repetitions: null,
@@ -75,7 +75,7 @@ export default [
   },
   {
     id: 9,
-    activity_id: 4,
+    user_team_activities_id: 4,
     exercises_equipment_id: 4,
     ex_weight: 20,
     ex_repetitions: 10,
@@ -84,7 +84,7 @@ export default [
   },
   {
     id: 10,
-    activity_id: 4,
+    user_team_activities_id: 4,
     exercises_equipment_id: 4,
     ex_weight: 20,
     ex_repetitions: 10,
@@ -93,7 +93,7 @@ export default [
   },
   {
     id: 11,
-    activity_id: 4,
+    user_team_activities_id: 4,
     exercises_equipment_id: 4,
     ex_weight: 20,
     ex_repetitions: 8,
@@ -102,7 +102,7 @@ export default [
   },
   {
     id: 12,
-    activity_id: 4,
+    user_team_activities_id: 4,
     exercises_equipment_id: 5,
     ex_weight: null,
     ex_repetitions: 30,
@@ -112,7 +112,7 @@ export default [
   },
   {
     id: 13,
-    activity_id: 4,
+    user_team_activities_id: 4,
     exercises_equipment_id: 5,
     ex_weight: null,
     ex_repetitions: 30,
@@ -122,7 +122,7 @@ export default [
   },
   {
     id: 14,
-    activity_id: 4,
+    user_team_activities_id: 4,
     exercises_equipment_id: 5,
     ex_weight: null,
     ex_repetitions: 30,
