@@ -283,13 +283,27 @@ export function up(knex) {
       .inTable("exercises_equipment")
       .onUpdate("CASCADE")
       .onDelete("CASCADE");
-    table.decimal("ex_weight", 4, 2);
-    table.integer("ex_repetitions");
-    table.integer("ex_duration");
-    table.integer("ex_distance");
-    table.specificType("ex_variations", "text ARRAY").nullable();
+    table.decimal("assigned_ex_weight", 4, 2).nullable();
+    table.integer("assigned_ex_repetitions").nullable();
+    table.integer("assigned_ex_duration").nullable();
+    table.integer("assigned_ex_distance").nullable();
+    table.string("assigned_ex_variation").nullable();
+    table.boolean("assigned_set_done").defaultTo("false");
+    table.boolean("assigned_set_done_partially").defaultTo("false");
+    table.decimal("completed_ex_weight", 4, 2).nullable();
+    table.integer("completed_ex_repetitions").nullable();
+    table.integer("completed_ex_duration").nullable();
+    table.integer("completed_ex_distance").nullable();
+    table.string("completed_ex_set_notes").nullable();
+    table
+      .timestamp("created_at", { useTz: true, precision: 0 })
+      .defaultTo(knex.fn.now(0));
+    table
+      .timestamp("updated_at", { useTz: true, precision: 0 })
+      .defaultTo(knex.fn.now(0));
   })
 };
+
 
 export function down(knex) {
   console.log("Knex/DB - DROP TABLES");

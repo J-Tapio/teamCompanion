@@ -1,4 +1,11 @@
 import errors from "./errors.js";
+import fitnessSchemas from "./activities.fitness.schema.js";
+
+let {
+  allFitnessActivities,
+  fitnessByUserTeamActivityId,
+  createExerciseSets
+} = fitnessSchemas;
 
 let createObjectSchema = {
   type: "object",
@@ -231,6 +238,7 @@ let deleteActivityParticipants = {
 };
 
 
+
 export default {
   allTeamActivities,
   teamActivityById,
@@ -239,5 +247,8 @@ export default {
   updateTeamActivity,
   deleteTeamActivity,
   insertActivityParticipants,
-  deleteActivityParticipants
+  deleteActivityParticipants,
+  allFitnessActivities,
+  fitnessByUserTeamActivityId,
+  createExerciseSets,
 }

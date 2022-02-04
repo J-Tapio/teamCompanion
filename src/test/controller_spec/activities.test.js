@@ -504,7 +504,8 @@ describe("::: ACTIVITIES CONTROLLER TESTS :::", () => {
             expect(res.statusCode).to.eql(400);
           });
 
-          it("Should return status 400 when providing invalid value",async() => {
+          it("Should return status 400 when providing invalid value",
+          async() => {
             let res = await chai.requester
               .post("/activities/team/1/activity/6/participants")
               .send({

@@ -1,10 +1,11 @@
 import errorHandler from "../tools/dbErrors.js";
 import TeamActivities from "../../db/models/teamActivities.model.js";
 import dbResultHandlers from "../controllers/dbResultHandlers/activities.js";
-import Venues from "../../db/models/venues.model.js";
 import UserTeams from "../../db/models/userTeams.model.js";
 import UserTeamActivities from "../../db/models/userTeamActivities.model.js";
-import {transaction} from "objection";
+import ExerciseSets from "../../db/models/exerciseSets.model.js";
+import dbFitnessResultHandlers from "../controllers/dbResultHandlers/exerciseSets.js";
+
 
 //TODO: Refactor queries to separate files for routes.
 //? Function, which returns the query result but also could receive
@@ -286,7 +287,8 @@ async function deleteActivityParticipants(request, reply) {
       let dbTeamMembers = await UserTeams.query()
         .whereIn(["id", "teamId"], teamMembers)
         .returning("id");
-      //! Query returns matches, hence the check for length equality:
+      // throwIfNotFound method invalid as it will not throw error
+      // Query returns matches, hence the check for length equality:
       if(teamMembers.length !== dbTeamMembers.length) {
         reply.notFound();
       }
@@ -313,6 +315,250 @@ async function deleteActivityParticipants(request, reply) {
   }
 }
 
+
+function teamFitnessQuery() {
+  return ExerciseSets.query()
+      .select(
+        "exerciseSets.id as exerciseSetId",
+        "userTeamActivitiesId",
+        "userTeamId",
+        "firstName",
+        "lastName",
+        "teamRole",
+        "exercisesEquipmentId",
+        "exercises.exerciseName",
+        "equipment.equipmentName",
+        "assignedExWeight",
+        "assignedExRepetitions",
+        "assignedExDuration",
+        "assignedExDistance",
+        "assignedExVariation",
+        "assignedSetDone",
+        "assignedSetDonePartially",
+        "completedExWeight",
+        "completedExRepetitions",
+        "completedExDuration",
+        "completedExDistance",
+        "completedExSetNotes",
+        "rpeValue"
+      )
+      //.where("userTeams.teamId", request.params.teamId)
+      .orderBy("userTeamActivities.id")
+      .orderBy("exerciseSets.id")
+      .joinRelated({
+        userTeamActivities: true,
+        exercisesEquipment: true,
+      })
+      .innerJoin(
+        "userTeams",
+        "userTeamActivities.userTeamId",
+        "=",
+        "userTeams.id"
+      )
+      .innerJoin(
+        "userInformation",
+        "userInformation.userId",
+        "=",
+        "userTeams.userId"
+      )
+      .innerJoin(
+        "exercises",
+        "exercisesEquipment.exerciseId",
+        "=",
+        "exercises.id"
+      )
+      .innerJoin(
+        "equipment",
+        "exercisesEquipment.equipmentId",
+        "=",
+        "equipment.id"
+      );
+}
+
+async function allTeamFitnessData(request, reply) {
+  try {
+    // Retrieve all exercise sets related to fitness activity.
+    let allTeamFitnessQuery = teamFitnessQuery().modify((baseQuery) => {
+      baseQuery.where("userTeams.teamId", request.params.teamId)
+    });
+
+    let data = dbFitnessResultHandlers
+    .allTeamFitnessData(await allTeamFitnessQuery);
+
+    reply.send({data})
+  } catch (error) {
+    errorHandler(error, reply);
+  }
+}
+
+async function fitnessByAthleteId(request, reply) {
+  try {
+    let fitnessByTeamMemberQuery = teamFitnessQuery().modify((baseQuery) => {
+      baseQuery.where("userTeams.teamId", request.params.teamId)
+      .andWhere("userTeams.id", request.params.userTeamId)
+      .throwIfNotFound();
+    });
+
+    let data = dbFitnessResultHandlers.allTeamFitnessData(
+      await fitnessByTeamMemberQuery
+    );
+
+    reply.send({data});
+
+  } catch (error) {
+    errorHandler(error, reply);
+  }
+}
+
+async function fitnessByActivityId(request, reply) {
+  try {
+    let query = teamFitnessQuery().modify((baseQuery) => {
+      baseQuery.where("userTeams.teamId", request.params.teamId)
+      .andWhere("userTeamActivities.teamActivityId", request.params.activityId)
+      .throwIfNotFound()
+    })
+
+    let data = dbFitnessResultHandlers.allTeamFitnessData(
+      await query
+    );
+
+    reply.send({data});
+  } catch (error) {
+    errorHandler(error, reply);
+  }
+}
+
+
+async function fitnessByUserTeamActivityId(request, reply) {
+  try {
+    let query = teamFitnessQuery().modify((baseQuery) => {
+      baseQuery
+        .where("userTeams.teamId", request.params.teamId)
+        .andWhere("userTeamActivities.userTeamId", request.params.userTeamId)
+        .andWhere(
+          "userTeamActivities.teamActivityId",
+          request.params.activityId
+        )
+        .throwIfNotFound();
+    });
+
+    let data = dbFitnessResultHandlers.exerciseSetsByActivityAndTeamMember(
+      await query
+    );
+
+    reply.send(data);
+  } catch (error) {
+    errorHandler(error, reply);
+  }
+}
+
+// Helper function for create & update
+async function checkRequestIdsAgainstDB(data, activityId) {
+  // Verify that within batch of data, the userTeamActivitiesId & activityId is found within UserTeamActivities table
+    // From request body data, extract distinct userTeamActivitiesIds:
+    let requestIds = data.reduce((acc, currentVal) => {
+      if(acc.length > 0 && acc[acc.length-1][0][0] === currentVal.userTeamActivitiesId) {
+        return acc;
+      } else {
+        acc.push([currentVal.userTeamActivitiesId, parseInt(activityId)])
+        return acc;
+      }
+    },[])
+
+    // Find matching rows from userTeamActivities table:
+    let dbRowMatches = await UserTeamActivities.query()
+    .whereIn(["id", "teamActivityId"], requestIds)
+    .select("id");
+
+    console.log(requestIds.length, dbRowMatches.length);
+    // .throwIfNotFound() not possible method as query ignores unknown records, 
+    // check for array length equality, eg [1] === [[2,2]]:
+    if(dbRowMatches.length !== requestIds.length) {
+      return false;
+    } else {
+      return true;
+    }
+}
+
+async function createExerciseSets(request, reply) {
+  try {
+    let {data} = request.body;
+    let {activityId} = request.params;
+    // Verify that unknown id's not provided within request data
+    if(!await checkRequestIdsAgainstDB(data, activityId)) {
+      reply.badRequest();
+    } else {
+      // Batch insert:
+      let trx = await ExerciseSets.startTransaction();
+      let createdExerciseSets;
+        try {
+          createdExerciseSets = await ExerciseSets.query()
+              .insert(data)
+              .returning("*")
+          await trx.commit();
+        } catch (error) {
+          await trx.rollback();
+          reply.badRequest();
+        }
+      reply.status(201).send({ data: createdExerciseSets })
+    }
+  } catch (error) {
+    errorHandler(error, reply);
+  }
+}
+
+async function modifyExerciseSets(request, reply) {
+  try {
+    // Update one or multiple assigned exercise set(s)
+    // Delete one or multiple assigned exercise set(s)
+    let {data} = request.body;
+
+    if(
+      data.length > 0 
+      && 
+      typeof data[0] === "object" 
+      && 
+      typeof data[0] !== "null"
+      ) {
+      // Request is meant to be update of DB records
+      // Verify that unknown id's not provided within request data
+      await matchRequestIdsWithExistingTableIds(request, reply);
+
+      // Update exercise set(s)
+      let trx = await ExerciseSets.startTransaction();
+      try {
+        let updatedExerciseSets=[];
+
+        data.forEach(async (exerciseSet) => {
+          const { userTeamActivitiesId, ...updateInformation } = exerciseSet;
+          let updatedExerciseSet = await ExerciseSets.query().patch(updateInformation);
+          updatedExerciseSets.push(updatedExerciseSet);
+          await trx.commit();
+        });
+
+        reply.send({data: updatedExerciseSets})
+      } catch (error) {
+        await trx.rollback();
+        reply.badRequest();
+      }
+    } else {
+      // Delete exercise set(s)
+      let trx = await ExerciseSets.startTransaction();
+      try {
+        await ExerciseSets.query().del().whereIn("id", data);
+        await trx.commit();
+      } catch (error) {
+        await trx.rollback();
+        reply.badRequest();
+      }
+      reply.status(204).send();
+    }
+  } catch (error) {
+    errorHandler(error, reply);
+  }
+}
+
+
 export default {
   allTeamActivities,
   teamActivityById,
@@ -322,4 +568,10 @@ export default {
   deleteTeamActivity,
   insertActivityParticipants,
   deleteActivityParticipants,
+  allTeamFitnessData,
+  fitnessByAthleteId,
+  fitnessByActivityId,
+  fitnessByUserTeamActivityId,
+  createExerciseSets,
+  modifyExerciseSets
 }

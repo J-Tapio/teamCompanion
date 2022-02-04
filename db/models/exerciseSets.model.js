@@ -1,4 +1,6 @@
 import { Model } from "objection";
+import UserTeamActivities from "./userTeamActivities.model.js";
+import ExercisesEquipment from "./exercisesEquipment.model.js";
 
 class ExerciseSets extends Model {
   static get tableName() {
@@ -7,6 +9,7 @@ class ExerciseSets extends Model {
 
   $beforeInsert() {
     this.createdAt = new Date().toISOString();
+    this.updatedAt = new Date().toISOString();
   }
 
   $beforeUpdate() {
@@ -17,35 +20,52 @@ class ExerciseSets extends Model {
     return {
       type: "object",
       required: [
-        "activityId",
-        "exEqId",
-        "exWeight",
-        "exRepetitions",
-        "exDuration",
-        "exDistance",
+        "userTeamActivitiesId", 
+        "exercisesEquipmentId", 
+        "assignedExWeight", 
+        "assignedExRepetitions", 
+        "assignedExDuration", 
+        "assignedExDistance"
       ],
       properties: {
         id: { type: "integer" },
-        activityId: { type: "integer" },
-        exEqId: { type: "integer" },
-        exWeight: { type: ["number", "null"] },
-        exRepetitions: { type: ["integer", "null"] },
-        exDuration: { type: ["integer", "null"] },
-        exDistance: { type: ["integer", "null"] },
-        exVariations: { type: "array", items: {type: "string"}},
+        userTeamActivitiesId: { type: "integer" },
+        exercisesEquipmentId: { type: "integer" },
+        assignedExWeight: { type: ["number", "null"], multipleOf: 0.01 },
+        assignedExRepetitions: { type: ["integer", "null"] },
+        assignedExDuration: { type: ["integer", "null"] },
+        assignedExDistance: { type: ["integer", "null"] },
+        assignedExVariation: { type: ["string", "null"] },
+        assignedSetDone: { type: "boolean" },
+        assignedSetDonePartially: { type: "boolean" },
+        completedExWeight: { type: ["number", "null"], multipleOf: 0.01 },
+        completedExRepetitions: { type: ["integer", "null"] },
+        completedExDuration: { type: ["integer", "null"] },
+        completedExDistance: { type: ["integer", "null"] },
+        completedExSetNotes: { type: ["string", "null"] },
       },
     };
   }
 
-  static relationMappings = {
-    exEqId: {
-      relation: Model.BelongsToOneRelation,
-      modelClass: ExerciseEquipment,
-      join: {
-        from: "exercise_sets.ex_eq_id",
-        to: "exercise_equipment.id",
+  static get relationMappings() {
+    return {
+      userTeamActivities: {
+        relation: Model.BelongsToOneRelation,
+        modelClass: UserTeamActivities,
+        join: {
+          from: "exercise_sets.userTeamActivitiesId",
+          to: "user_team_activities.id"
+        }
       },
-    },
+      exercisesEquipment: {
+        relation: Model.BelongsToOneRelation,
+        modelClass: ExercisesEquipment,
+        join: {
+          from: "exercise_sets.exercisesEquipmentId",
+          to: "exercises_equipment.id",
+        },
+      }
+    }
   };
 }
 

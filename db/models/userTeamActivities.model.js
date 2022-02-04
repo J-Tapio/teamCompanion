@@ -2,7 +2,7 @@ import { Model } from "objection";
 
 class UserTeamActivities extends Model {
   static get tableName() {
-    return "userTeamActivities";
+    return "user_team_activities";
   }
 
   $beforeInsert() {
@@ -22,7 +22,7 @@ class UserTeamActivities extends Model {
         id: { type: "integer" },
         userTeamId: { type: "integer" },
         teamActivityId: { type: "integer" },
-        rpeValue: { type: "integer", minimum: 1, maximum: 10 }
+        rpeValue: { type: ["integer", "null"], minimum: 1, maximum: 10 }
       }
     }
   }

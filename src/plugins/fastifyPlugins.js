@@ -73,28 +73,42 @@ export async function checkActivitiesPriviledgePlugin(fastify, options) {
   fastify.decorateRequest("checkActivitiesPriviledge", async function(request, reply) {
     try {
 
-      let teamRoles = [
+      let allTeamRoles = [
         "Coach", "Trainer", "Physiotherapist", "Staff", "Athlete"
       ]
 
       let allowedRolesAndMethods = new Map();
       allowedRolesAndMethods
         .set("/activities/team/:teamId", {
-          GET: _.without(teamRoles, "Athlete"),
-          POST: _.without(teamRoles, "Athlete"),
+          GET: _.without(allTeamRoles, "Athlete"),
+          POST: _.without(allTeamRoles, "Athlete"),
         })
         .set("/activities/team/:teamId/activity/:activityId", {
-          GET: teamRoles,
-          PUT: _.without(teamRoles, "Athlete"),
-          DELETE: _.without(teamRoles, "Athlete"),
+          GET: allTeamRoles,
+          PUT: _.without(allTeamRoles, "Athlete"),
+          DELETE: _.without(allTeamRoles, "Athlete"),
         })
         .set("/activities/team/:teamId/member/:userTeamId", {
-          GET: teamRoles,
+          GET: allTeamRoles,
         })
         .set("/activities/team/:teamId/activity/:activityId/participants", {
-          POST: _.without(teamRoles, "Athlete"),
-          PUT: _.without(teamRoles, "Athlete"),
-        });
+          POST: _.without(allTeamRoles, "Athlete"),
+          PUT: _.without(allTeamRoles, "Athlete"),
+        })
+        .set("/activities/team/:teamId/activity/fitness", {
+          GET: _.without(allTeamRoles, "Athlete"),
+        })
+        .set("/activities/team/:teamId/activity/fitness/member/:userTeamId", {
+          GET: allTeamRoles,
+        })
+        .set("/activities/team/:teamId/activity/:activityId/fitness/member/:userTeamId/exercises", {
+          GET: allTeamRoles,
+        })
+        .set("/activities/team/:teamId/activity/fitness/:activityId", {
+          GET: allTeamRoles,
+          POST: _.without(allTeamRoles, "Athlete", "Staff"),
+          PUT: _.without(allTeamRoles, "Athlete", "Staff"),
+        })
 
 
       if (!request.user.roles.includes("admin")) {
@@ -105,14 +119,16 @@ export async function checkActivitiesPriviledgePlugin(fastify, options) {
             teamId: request.params.teamId,
             userId: request.user.id,
           })
-          .first();
+          .first()
+          .throwIfNotFound();
+
+        console.log(teamMember);
 
         if(!teamMember) {
           // Request user not part of the team
           reply.forbidden();
         } else {
           const {id, teamRole} = teamMember;
-          // Requested route & method
           const route = request.context.config.url;
           const method = request.method;
           // Athlete should be only allowed to see activities where participant
@@ -120,24 +136,46 @@ export async function checkActivitiesPriviledgePlugin(fastify, options) {
             teamRole === "Athlete" && 
             allowedRolesAndMethods.get(route)[method].includes("Athlete")
           ) {
+            // Routes, which need userTeamId === request user's userTeamId check.
+            let checkForUserTeamIdRoutes = [
+              "/activities/team/:teamId/activity/fitness/member/:userTeamId",
+              "/activities/team/:teamId/activity/:activityId/fitness/member/:userTeamId/exercises",
+            ];
+            
             let isParticipantOfActivity = await UserTeamActivities.query()
               .where({
                 userTeamId: id,
-                teamActivityId: request.params.activityId,
+                ...(route !== checkForUserTeamIdRoutes[0] &&
+                  {teamActivityId: request.params.activityId}
+                )
               })
-              .returning("id")
+              .returning("id, userTeamId")
               .first();
 
-            !isParticipantOfActivity && reply.forbidden();
+              // Requesting user might be participant but requesting with wrong userTeamId (not the same as request user has)
+              if (
+                checkForUserTeamIdRoutes.includes(route)
+                && 
+                isParticipantOfActivity.userTeamId !==
+                parseInt(request.params.userTeamId) 
+              ) {
+                reply.forbidden();
+              } else {
+                request.user.teamRole = teamRole;
+                request.user.userTeamId = id;
+              }
+
           } else {
             // Check the priviledges per method & route of HTTP-request:
             // Include additional information to user property on request
-            allowedRolesAndMethods.get(route)[method].includes(teamRole) &&
-            ((request.user.teamRole = teamRole),
-            (request.user.userTeamId = id));
-
-            !allowedRolesAndMethods.get(route)[method].includes(teamRole) &&
-            reply.forbidden();
+            if (
+              allowedRolesAndMethods.get(route)[method].includes(teamRole)
+            ) {
+              request.user.teamRole = teamRole,
+              request.user.userTeamId = id;
+            } else {
+              reply.forbidden();
+            }
           }
         }
       }
