@@ -16,6 +16,7 @@ describe("::: ACTIVITIES CONTROLLER TESTS :::", () => {
     let coachUserToken;
     let trainerUserToken;
     let athleteUserToken;
+    let staffUserToken
 
     before(async () => {
       await insertData();
@@ -43,6 +44,12 @@ describe("::: ACTIVITIES CONTROLLER TESTS :::", () => {
           .post("/login")
           .send({ email: "athlete@mail.com", password: "athlete123" })
       ).body.accessToken;
+
+      staffUserToken = (
+        await chai.requester
+          .post("/login")
+          .send({ email: "athlete@mail.com", password: "staff123" })
+      ).body.accessToken;
     });
 
     describe(":: With invalid / missing token / no priviledges ::", () => {
@@ -60,14 +67,11 @@ describe("::: ACTIVITIES CONTROLLER TESTS :::", () => {
           let res1 = await chai.requester.get("/activities/team/1")
             .set("Authorization", `Bearer ${athleteUserToken}`);
 
-          let res2 = await chai.requester.get("/activities/team/2")
-            .set("Authorization", `Bearer ${athleteUserToken}`);
-
-          let res3 = await chai.requester
+          let res2 = await chai.requester
             .get("/activities/team/1/activity/6")
             .set("Authorization", `Bearer ${athleteUserToken}`);
 
-          let res4 = await chai.requester
+          let res3 = await chai.requester
             .post("/activities/team/1")
             .send({
               activityTypeId: 2,
@@ -77,25 +81,29 @@ describe("::: ACTIVITIES CONTROLLER TESTS :::", () => {
             })
             .set("Authorization", `Bearer ${athleteUserToken}`);
 
-          let res5 = await chai.requester
+          let res4 = await chai.requester
             .put("/activities/team/1/activity/2")
             .send({activityTypeId: 3})
             .set("Authorization", `Bearer ${athleteUserToken}`);
 
-          let res6 = await chai.requester
+          let res5 = await chai.requester
             .delete("/activities/team/1/activity/2")
             .set("Authorization", `Bearer ${athleteUserToken}`);
 
-          let res7 = await chai.requester
+          let res6 = await chai.requester
             .post("/activities/team/1/activity/1/participants")
             .send({data: [{userTeamId: 2}]})
             .set("Authorization", `Bearer ${athleteUserToken}`);
 
-          let res8 = await chai.requester
+          let res7 = await chai.requester
             .put("/activities/team/1/activity/1/participants")
             .send({ data: [{ userTeamId: 2 }] })
             .set("Authorization", `Bearer ${athleteUserToken}`);
-          
+
+    /*       let res8 = await chai.requester
+            .get("/activities/team/2/activity")
+            .set("Authorization", `Bearer ${athleteUserToken}`); */
+
           expect(res1.statusCode).to.eql(403);
           expect(res2.statusCode).to.eql(403);
           expect(res3.statusCode).to.eql(403);
@@ -103,7 +111,7 @@ describe("::: ACTIVITIES CONTROLLER TESTS :::", () => {
           expect(res5.statusCode).to.eql(403);
           expect(res6.statusCode).to.eql(403);
           expect(res7.statusCode).to.eql(403);
-          expect(res8.statusCode).to.eql(403);
+          //expect(res8.statusCode).to.eql(403);
         });
     });
 
@@ -117,6 +125,13 @@ describe("::: ACTIVITIES CONTROLLER TESTS :::", () => {
             .set("Authorization", `Bearer ${adminUserToken}`);
           expect(res.statusCode).to.eql(404);
         });
+
+        /* it("Should return status 403 when not a team member", async() => {
+            let res = await chai.requester
+              .get("/activities/team/2")
+              .set("Authorization", `Bearer ${staffUserToken}`);
+            expect(res.statusCode).to.eql(404);
+        }) */
 
         it("Should return all created activities", async () => {
           let res = await chai.requester
@@ -504,7 +519,8 @@ describe("::: ACTIVITIES CONTROLLER TESTS :::", () => {
             expect(res.statusCode).to.eql(400);
           });
 
-          it("Should return status 400 when providing invalid value",async() => {
+          it("Should return status 400 when providing invalid value",
+          async() => {
             let res = await chai.requester
               .post("/activities/team/1/activity/6/participants")
               .send({

@@ -1,10 +1,12 @@
 import errorHandler from "../tools/dbErrors.js";
 import TeamActivities from "../../db/models/teamActivities.model.js";
 import dbResultHandlers from "../controllers/dbResultHandlers/activities.js";
-import Venues from "../../db/models/venues.model.js";
 import UserTeams from "../../db/models/userTeams.model.js";
 import UserTeamActivities from "../../db/models/userTeamActivities.model.js";
-import {transaction} from "objection";
+import ExerciseSets from "../../db/models/exerciseSets.model.js";
+import dbFitnessResultHandlers from "../controllers/dbResultHandlers/exerciseSets.js";
+import ExercisesEquipment from "../../db/models/exercisesEquipment.model.js";
+
 
 //TODO: Refactor queries to separate files for routes.
 //? Function, which returns the query result but also could receive
@@ -286,7 +288,8 @@ async function deleteActivityParticipants(request, reply) {
       let dbTeamMembers = await UserTeams.query()
         .whereIn(["id", "teamId"], teamMembers)
         .returning("id");
-      //! Query returns matches, hence the check for length equality:
+      // throwIfNotFound method invalid as it will not throw error
+      // Query returns matches, hence the check for length equality:
       if(teamMembers.length !== dbTeamMembers.length) {
         reply.notFound();
       }
@@ -313,6 +316,296 @@ async function deleteActivityParticipants(request, reply) {
   }
 }
 
+
+function teamFitnessQuery() {
+  return ExerciseSets.query()
+      .select(
+        "exerciseSets.id as exerciseSetId",
+        "userTeamActivitiesId",
+        "userTeamId",
+        "firstName",
+        "lastName",
+        "teamRole",
+        "exercisesEquipmentId",
+        "exercises.exerciseName",
+        "equipment.equipmentName",
+        "assignedExWeight",
+        "assignedExRepetitions",
+        "assignedExDuration",
+        "assignedExDistance",
+        "assignedExVariation",
+        "assignedSetDone",
+        "assignedSetDonePartially",
+        "completedExWeight",
+        "completedExRepetitions",
+        "completedExDuration",
+        "completedExDistance",
+        "completedExSetNotes",
+        "rpeValue"
+      )
+      //.where("userTeams.teamId", request.params.teamId)
+      .orderBy("userTeamActivities.id")
+      .orderBy("exerciseSets.id")
+      .joinRelated({
+        userTeamActivities: true,
+        exercisesEquipment: true,
+      })
+      .innerJoin(
+        "userTeams",
+        "userTeamActivities.userTeamId",
+        "=",
+        "userTeams.id"
+      )
+      .innerJoin(
+        "userInformation",
+        "userInformation.userId",
+        "=",
+        "userTeams.userId"
+      )
+      .innerJoin(
+        "exercises",
+        "exercisesEquipment.exerciseId",
+        "=",
+        "exercises.id"
+      )
+      .innerJoin(
+        "equipment",
+        "exercisesEquipment.equipmentId",
+        "=",
+        "equipment.id"
+      );
+}
+
+async function allTeamFitnessData(request, reply) {
+  try {
+    // Retrieve all exercise sets related to fitness activity.
+    let allTeamFitnessQuery = teamFitnessQuery().modify((baseQuery) => {
+      baseQuery.where("userTeams.teamId", request.params.teamId)
+    });
+
+    let data = dbFitnessResultHandlers
+    .allTeamFitnessData(await allTeamFitnessQuery);
+
+    reply.send({data})
+  } catch (error) {
+    errorHandler(error, reply);
+  }
+}
+
+async function fitnessByAthleteId(request, reply) {
+  try {
+    let fitnessByTeamMemberQuery = teamFitnessQuery().modify((baseQuery) => {
+      baseQuery.where("userTeams.teamId", request.params.teamId)
+      .andWhere("userTeams.id", request.params.userTeamId)
+      .throwIfNotFound();
+    });
+
+    let data = dbFitnessResultHandlers.allTeamFitnessData(
+      await fitnessByTeamMemberQuery
+    );
+
+    reply.send({data});
+
+  } catch (error) {
+    errorHandler(error, reply);
+  }
+}
+
+async function fitnessByActivityId(request, reply) {
+  try {
+    let query = teamFitnessQuery().modify((baseQuery) => {
+      baseQuery.where("userTeams.teamId", request.params.teamId)
+      .andWhere("userTeamActivities.teamActivityId", request.params.activityId)
+      .throwIfNotFound()
+    })
+
+    let data = dbFitnessResultHandlers.allTeamFitnessData(
+      await query
+    );
+
+    reply.send({data});
+  } catch (error) {
+    errorHandler(error, reply);
+  }
+}
+
+
+async function fitnessByUserTeamActivityId(request, reply) {
+  try {
+    let query = teamFitnessQuery().modify((baseQuery) => {
+      baseQuery
+        .where("userTeams.teamId", request.params.teamId)
+        .andWhere("userTeamActivities.userTeamId", request.params.userTeamId)
+        .andWhere(
+          "userTeamActivities.teamActivityId",
+          request.params.activityId
+        )
+        .throwIfNotFound();
+    });
+
+    let data = dbFitnessResultHandlers.exerciseSetsByActivityAndTeamMember(
+      await query
+    );
+
+    reply.send(data);
+  } catch (error) {
+    errorHandler(error, reply);
+  }
+}
+
+
+/**
+ * Verify that activityId & userTeamActivityId pairs exist in db join table
+ * Return boolean
+ */
+async function requestIdsExistOnDb(data, activityId, reply) {
+  // Verify that activityId & userTeamActivityId pair exists in join table
+  let requestIds = data.reduce((acc, currentVal) => {
+    if(acc.length > 0 && acc[acc.length-1][0][0] === currentVal.userTeamActivitiesId) {
+      return acc;
+    } else {
+      acc.push([currentVal.userTeamActivitiesId, parseInt(activityId)])
+      return acc;
+    }
+  },[])
+  let dbIdMatches = await UserTeamActivities.query()
+  .whereIn(["id", "teamActivityId"], requestIds)
+  .select("id");
+
+  if(requestIds.length === dbIdMatches.length) return true; else false;
+
+ /*  // Verify that payload exercisesEquipmentIds exist in join table
+  if(data[0].exercisesEquipmentId) {
+    let payloadExEqIds = data.map(
+      (exerciseSet) => exerciseSet.exercisesEquipmentId
+    );
+    let dbExEqIdMatches = await ExercisesEquipment.query()
+      .select("id")
+      .whereIn("id", payloadExEqIds)
+  } */
+
+  /* if(
+    requestIds.length === dbIdMatches.length &&
+    payloadExEqIds.length === dbExEqIdMatches.length
+  ) {
+    return true;
+  } else {
+    return false;
+  } */
+}
+
+async function createExerciseSets(request, reply) {
+  try {
+    let {data} = request.body;
+    let {activityId} = request.params;
+    // Verify that unknown id's not provided within request data
+    if(!await requestIdsExistOnDb(data, activityId)) {
+      reply.notFound();
+    } else {
+      // Batch insert:
+      let trx = await ExerciseSets.startTransaction();
+      let createdExerciseSets;
+        try {
+          createdExerciseSets = await ExerciseSets.query()
+            .insert(data)
+            .returning("*")
+          await trx.commit();
+        } catch (error) {
+          await trx.rollback();
+          reply.badRequest();
+        }
+      reply.status(201).send({ data: createdExerciseSets })
+    }
+  } catch (error) {
+    errorHandler(error, reply);
+  }
+}
+
+async function modifyExerciseSets(request, reply) {
+  /**
+   * Update one or multiple assigned exercise set(s)
+   * Delete one or multiple assigned exercise set(s)
+   */
+  try {
+    let { data } = request.body;
+    let { activityId } = request.params;
+    // Data array of objects:
+    if (
+      data.length > 0 &&
+      typeof data[0] === "object" &&
+      typeof data[0] !== "null"
+    ) {
+      // Verify that unknown id's not provided within request data
+      if (!(await requestIdsExistOnDb(data, activityId))) {
+        reply.notFound();
+      } else {
+        await batchExerciseSetsUpdate(data);
+        let updatedIds = data.map((exerciseSet) => exerciseSet.id);
+        let updatedExerciseSets = await ExerciseSets.query()
+          .select(
+            "id",
+            "userTeamActivitiesId",
+            "exercisesEquipmentId",
+            "assignedExWeight",
+            "assignedExRepetitions",
+            "assignedExDuration",
+            "assignedExDistance",
+            "assignedExVariation",
+            "updatedAt"
+          )
+          .whereIn("id", updatedIds);
+        reply.send({ data: updatedExerciseSets });
+
+        async function batchExerciseSetsUpdate(data) {
+          let trx = await ExerciseSets.startTransaction();
+          try {
+            // Update exercise set(s)
+            await Promise.all(
+              data.map((exerciseSet) => {
+                let { id, ...updateInformation } = exerciseSet;
+                return ExerciseSets.query()
+                  .patch(updateInformation)
+                  .where("id", id);
+              })
+            );
+            await trx.commit();
+          } catch (error) {
+            await trx.rollback();
+            reply.badRequest(error);
+          }
+        }
+      }
+    } else if (data.length > 0) {
+      /**
+       * Delete exercise set(s) by id(s)
+       * id(integer)
+       * Data [id, id,.]
+       */
+      await deleteExerciseSets(data);
+      reply.status(204).send();
+
+      async function deleteExerciseSets(data) {
+        let trx = await ExerciseSets.startTransaction();
+        try {
+          await Promise.all(
+            data.map((id) => {
+              return ExerciseSets.query().deleteById(id).throwIfNotFound();
+            })
+          );
+          await trx.commit();
+        } catch (error) {
+          await trx.rollback();
+          //? Or should it be notFound()?
+          reply.badRequest();
+        }
+      }
+    }
+  } catch (error) {
+    errorHandler(error, reply);
+  }
+}
+
+
 export default {
   allTeamActivities,
   teamActivityById,
@@ -322,4 +615,10 @@ export default {
   deleteTeamActivity,
   insertActivityParticipants,
   deleteActivityParticipants,
+  allTeamFitnessData,
+  fitnessByAthleteId,
+  fitnessByActivityId,
+  fitnessByUserTeamActivityId,
+  createExerciseSets,
+  modifyExerciseSets
 }

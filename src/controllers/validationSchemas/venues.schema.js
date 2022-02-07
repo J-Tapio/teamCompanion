@@ -1,4 +1,4 @@
-import errors from "./errors.js";
+import errors from "./errors.schema.js";
 import countries from "../../../db/utils/countries.js"
 
 let venueObject = {
