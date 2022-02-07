@@ -1,5 +1,5 @@
 import countries from "../../../db/utils/countries.js"
-import errors from "./errors.js";
+import errors from "./errors.schema.js";
 
 
 const allTeams = {

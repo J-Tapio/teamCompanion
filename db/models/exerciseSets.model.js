@@ -1,4 +1,4 @@
-import { Model } from "objection";
+import objection, { Model } from "objection";
 import UserTeamActivities from "./userTeamActivities.model.js";
 import ExercisesEquipment from "./exercisesEquipment.model.js";
 
@@ -10,6 +10,26 @@ class ExerciseSets extends Model {
   $beforeInsert() {
     this.createdAt = new Date().toISOString();
     this.updatedAt = new Date().toISOString();
+
+    /**
+     * If assignedExWeight not null, assignedExRepetitions cannot be null
+     * ! Not operator used to check also 0, undefined, false,empty string etc.
+     * Might be overkill, Fastify and Objection already validate payload
+     */
+    if(
+      !this.assignedExWeight && this.assignedExRepetitions
+      ||
+      this.assignedExWeight && !this.assignedExRepetitions
+      ) {
+      throw new objection.ValidationError({
+        message: "When assigning exercise with weight, repetitions has to be assigned.",
+        type: "Either assignedExWeight or assignedExRepetitions cannot be null when one has value other than null.",
+        data: {
+          assignedExWeight: this.assignedExWeight,
+          assignedExRepetitions: this.assignedExRepetitions
+        }
+      })
+    }
   }
 
   $beforeUpdate() {

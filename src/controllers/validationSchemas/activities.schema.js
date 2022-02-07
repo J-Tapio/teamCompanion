@@ -1,10 +1,11 @@
-import errors from "./errors.js";
+import errors from "./errors.schema.js";
 import fitnessSchemas from "./activities.fitness.schema.js";
 
 let {
   allFitnessActivities,
   fitnessByUserTeamActivityId,
-  createExerciseSets
+  createExerciseSets,
+  updateOrDeleteExerciseSets
 } = fitnessSchemas;
 
 let createObjectSchema = {
@@ -251,4 +252,5 @@ export default {
   allFitnessActivities,
   fitnessByUserTeamActivityId,
   createExerciseSets,
+  updateOrDeleteExerciseSets
 }

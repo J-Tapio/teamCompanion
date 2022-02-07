@@ -581,7 +581,7 @@ let invalidPostData = [
     assignedExWeight: 20,
     assignedExRepetitions: null,
     assignedExDuration: 30,
-    assignedExDistance: 3000.123,
+    assignedExDistance: 3000.123, // Not integer
   },
 ];
 

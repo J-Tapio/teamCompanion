@@ -283,14 +283,14 @@ export function up(knex) {
       .inTable("exercises_equipment")
       .onUpdate("CASCADE")
       .onDelete("CASCADE");
-    table.decimal("assigned_ex_weight", 4, 2).nullable();
+    table.decimal("assigned_ex_weight", 5, 2).nullable();
     table.integer("assigned_ex_repetitions").nullable();
     table.integer("assigned_ex_duration").nullable();
     table.integer("assigned_ex_distance").nullable();
     table.string("assigned_ex_variation").nullable();
     table.boolean("assigned_set_done").defaultTo("false");
     table.boolean("assigned_set_done_partially").defaultTo("false");
-    table.decimal("completed_ex_weight", 4, 2).nullable();
+    table.decimal("completed_ex_weight", 5, 2).nullable();
     table.integer("completed_ex_repetitions").nullable();
     table.integer("completed_ex_duration").nullable();
     table.integer("completed_ex_distance").nullable();

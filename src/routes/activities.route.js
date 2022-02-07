@@ -2,8 +2,6 @@ import validationHandlers from "../controllers/preValidation/preValidators.js";
 import preHandlers from "../controllers/preHandlers/preHandlers.js";
 import activitiesHandlers from "../controllers/activities.controller.js"
 import activitiesSchemas from "../controllers/validationSchemas/activities.schema.js";
-import activitiesSchema from "../controllers/validationSchemas/activities.schema.js";
-import activities from "../controllers/dbResultHandlers/activities.js";
 const { authenticateUser } = validationHandlers;
 const { checkActivitiesPriviledge } = preHandlers;
 
@@ -69,7 +67,7 @@ export default [
   {
     method: "GET", // All members, athlete only if userTeamId === athlete
     url: "/activities/team/:teamId/activity/fitness/member/:userTeamId",
-    schema: activitiesSchema.allFitnessActivities,
+    schema: activitiesSchemas.allFitnessActivities,
     preValidation: authenticateUser,
     preHandler: checkActivitiesPriviledge,
     handler: activitiesHandlers.fitnessByAthleteId,
@@ -80,7 +78,7 @@ export default [
   {
     method: "GET", // All members, athlete only if userTeamId === athlete
     url: "/activities/team/:teamId/activity/:activityId/fitness/member/:userTeamId/exercises",
-    schema: activitiesSchema.fitnessByUserTeamActivityId,
+    schema: activitiesSchemas.fitnessByUserTeamActivityId,
     preValidation: authenticateUser,
     preHandler: checkActivitiesPriviledge,
     handler: activitiesHandlers.fitnessByUserTeamActivityId,
@@ -92,7 +90,7 @@ export default [
   {
     method: "POST", // Only trainer, coach, physio
     url: "/activities/team/:teamId/activity/fitness/:activityId",
-    schema: activitiesSchema.createExerciseSets,
+    schema: activitiesSchemas.createExerciseSets,
     preValidation: authenticateUser,
     preHandler: checkActivitiesPriviledge,
     handler: activitiesHandlers.createExerciseSets,
@@ -104,12 +102,13 @@ export default [
   {
     method: "PUT", // Only trainer, coach, physio
     url: "/activities/team/:teamId/activity/fitness/:activityId",
+    schema: activitiesSchemas.updateOrDeleteExerciseSets,
     preValidation: authenticateUser,
     preHandler: checkActivitiesPriviledge,
     handler: activitiesHandlers.modifyExerciseSets,
     config: {
       description:
-        "Update exercise set(s) assigned to team member in fitness activity",
+        "Update / Delete exercise set(s) assigned to team member in fitness activity",
     },
   },
   {

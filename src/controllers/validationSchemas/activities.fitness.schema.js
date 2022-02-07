@@ -1,4 +1,4 @@
-import errors from "./errors.js";
+import errors from "./errors.schema.js";
 
 let exerciseSets = {
   type: "array",
@@ -138,7 +138,7 @@ let createExerciseSets = {
       data: {
         type: "array",
         items: {
-          type: "object",
+          type: ["object", "integer"],
           required: [
             "userTeamActivitiesId",
             "exercisesEquipmentId",
@@ -188,8 +188,63 @@ let createExerciseSets = {
   },
 };
 
+let updateOrDeleteExerciseSets = {
+  body: {
+    type: "object",
+    properties: {
+      data: {
+        type: "array",
+        items: {
+          type: ["object", "integer"],
+          required: ["id", "userTeamActivitiesId"],
+          properties: {
+            id: { type: "integer" },
+            userTeamActivitiesId: { type: "integer" },
+            exercisesEquipmentId: { type: "integer" },
+            assignedExWeight: { type: ["number", "null"], multipleOf: 0.01 },
+            assignedExRepetitions: { type: ["integer", "null"] },
+            assignedExDuration: { type: ["integer", "null"] },
+            assignedExDistance: {
+              type: ["integer", "null"],
+            },
+            assignedExVariation: { type: ["string", "null"] },
+          },
+        },
+      },
+    },
+  },
+  response: {
+    200: {
+      type: "object",
+      properties: {
+        data: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              id: { type: "integer" },
+              userTeamActivitiesId: { type: "integer" },
+              exercisesEquipmentId: { type: "integer" },
+              assignedExWeight: { type: ["number", "null"], multipleOf: 0.01 },
+              assignedExRepetitions: { type: ["integer", "null"] },
+              assignedExDuration: { type: ["integer", "null"] },
+              assignedExDistance: {
+                type: ["integer", "null"],
+              },
+              assignedExVariation: { type: ["string", "null"] },
+              updatedAt: { type: "string", format: "date-time" },
+            },
+          },
+        },
+      },
+    },
+    ...errors
+  },
+};
+
 export default {
   allFitnessActivities,
   fitnessByUserTeamActivityId,
-  createExerciseSets
+  createExerciseSets,
+  updateOrDeleteExerciseSets
 }

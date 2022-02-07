@@ -77,7 +77,7 @@ async function addNewAthlete() {
 }
 
 
-describe.only("::: ACTIVITIES / FITNESS CONTROLLER TESTS :::", () => {
+describe("::: ACTIVITIES CONTROLLER TESTS - Fitness/Exercises :::", () => {
 
     let adminUserToken;
     let coachUserToken;
@@ -152,10 +152,9 @@ describe.only("::: ACTIVITIES / FITNESS CONTROLLER TESTS :::", () => {
             .put("/activities/team/1/activity/fitness/2")
             .send({data: [{
                 userTeamActivitiesId: 3,
-                  exercisesEquipmentId: 4,
+                exercisesEquipmentId: 4,
                 }]
             });
-
 
           expect(res1.statusCode).to.eql(400);
           expect(res2.statusCode).to.eql(400);
@@ -167,42 +166,55 @@ describe.only("::: ACTIVITIES / FITNESS CONTROLLER TESTS :::", () => {
 
       it("Should return status 403 when no priviledges to resource", 
       async() => {
+        let res1 = await chai.requester
+          .get("/activities/team/1/activity/fitness")
+          .set("Authorization", `Bearer ${athleteUserToken1}`);
+        /**
+         * Requesting team member part of activity but request
+        * contains wrong userTeamId - not the same as request user has!
+        */
+        let res2 = await chai.requester
+          .get("/activities/team/1/activity/2/fitness/member/5/exercises")
+          .set("Authorization", `Bearer ${athleteUserToken2}`);
 
-          let res1 = await chai.requester
-            .get("/activities/team/1/activity/fitness")
-            .set("Authorization", `Bearer ${athleteUserToken1}`);
+        let res3 = await chai.requester
+          .get("/activities/team/1/activity/fitness/member/8")
+          .set("Authorization", `Bearer ${athleteUserToken1}`);
 
-          let res2 = await chai.requester
-            .post("/activities/team/1/activity/fitness/3")
-            .send({
-              data: [helperObjects.validPostData[0]],
-            })
-            .set("Authorization", `Bearer ${athleteUserToken2}`);
+        let res4 = await chai.requester
+          .post("/activities/team/1/activity/fitness/3")
+          .send({
+            data: [helperObjects.validPostData[0]],
+          })
+          .set("Authorization", `Bearer ${athleteUserToken2}`);
 
-          let res3 = await chai.requester
-            .put("/activities/team/1/activity/fitness/2")
-            .send({data:[{
-              userTeamActivitiesId: 3,
-              exercisesEquipmentId: 4,
-            }]})
-            .set("Authorization", `Bearer ${athleteUserToken1}`);
+        let res5 = await chai.requester
+          .put("/activities/team/1/activity/fitness/2")
+          .send({
+            data: [
+              {
+                id: 2,
+                userTeamActivitiesId: 2,
+                assignedExWeight: 100,
+              },
+            ],
+          })
+          .set("Authorization", `Bearer ${athleteUserToken1}`);
 
-          // Requesting team member part of activity but request
-          // contains wrong userTeamId - not the same as request user has!
+        let res6 = await chai.requester
+          .put("/activities/team/1/activity/fitness/2")
+          .send({
+            data: [2],
+          })
+          .set("Authorization", `Bearer ${athleteUserToken1}`);
 
-          let res4 = await chai.requester
-            .get("/activities/team/1/activity/2/fitness/member/5/exercises")
-            .set("Authorization", `Bearer ${athleteUserToken2}`);
 
-          let res5 = await chai.requester
-            .get("/activities/team/1/activity/fitness/member/8")
-            .set("Authorization", `Bearer ${athleteUserToken1}`);
-
-          expect(res1.statusCode).to.eql(403);
-          expect(res2.statusCode).to.eql(403);
-          expect(res3.statusCode).to.eql(403);
-          expect(res4.statusCode).to.eql(403);
-          expect(res5.statusCode).to.eql(403);
+        expect(res1.statusCode).to.eql(403);
+        expect(res2.statusCode).to.eql(403);
+        expect(res3.statusCode).to.eql(403);
+        expect(res4.statusCode).to.eql(403);
+        expect(res5.statusCode).to.eql(403);
+        expect(res6.statusCode).to.eql(403);
       });
     });
 
@@ -210,11 +222,10 @@ describe.only("::: ACTIVITIES / FITNESS CONTROLLER TESTS :::", () => {
       describe(":: GET /activities/team/:teamId/activity/fitness ::", 
       () => {
       
-        it("Should return status 404 when unknown teamId", async() => {
+        it("Should return status 404 when teamId unknown", async() => {
           let res = await chai.requester
             .get("/activities/team/100/activity/fitness")
             .set("Authorization", `Bearer ${coachUserToken}`)
-
           expect(res.statusCode).to.eql(404);
         })
 
@@ -636,24 +647,27 @@ describe.only("::: ACTIVITIES / FITNESS CONTROLLER TESTS :::", () => {
             expect(res.statusCode).to.eql(404);
           })
 
-          it("Should return 400 when data contain unknown id's", async() => {
-            let res1 = await chai.requester
-              .post("/activities/team/1/activity/fitness/3")
-              .send({
-                data: [helperObjects.invalidPostData[0]],
-              })
-              .set("Authorization", `Bearer ${trainerUserToken}`);
-
-            let res2 = await chai.requester
+          it("Should return 404 when data contain unknown id's", async() => {
+            let res = await chai.requester
               .post("/activities/team/1/activity/fitness/3")
               .send({
                 data: [helperObjects.invalidPostData[1]],
               })
               .set("Authorization", `Bearer ${trainerUserToken}`);
 
-            expect(res1.statusCode).to.eql(400);
-            expect(res2.statusCode).to.eql(400);
+            expect(res.statusCode).to.eql(404);
           });
+
+          it("Should return 400 when unknown exercisesEquipmendId provided",
+          async() => {
+            let res = await chai.requester
+              .post("/activities/team/1/activity/fitness/3")
+              .send({
+                data: [helperObjects.invalidPostData[0]],
+              })
+              .set("Authorization", `Bearer ${trainerUserToken}`);
+            expect(res.statusCode).to.eql(400);
+          })
 
           it("Should return 400 when invalid value types provided within data",
           async() => {
@@ -703,21 +717,218 @@ describe.only("::: ACTIVITIES / FITNESS CONTROLLER TESTS :::", () => {
           });
         });
 
-    /*  describe(
-        ":: POST /activities/team/:teamId/activity/fitness/:activityId ::",
-          () => {
-            it("Should return 404 when teamId unknown", async () => {});
-          
-            it("Should return 400 when data contain unknown id's", async () => {});
-          
-            it("Should return 400 when invalid value types provided within data", async () => {});
+      describe(
+      ":: PUT /activities/team/:teamId/activity/fitness/:activityId ::",
+      () => {
+        describe(":: Update exercise set(s)", () => {
+          it("Should return 404 when teamId unknown", 
+          async () => {
+            let res = await chai.requester
+            .put("/activities/team/100/activity/fitness/2")
+            .send({data: [
+              {
+                id: 17,
+                ...helperObjects.validPostData[0],
+              }
+            ]})
+            .set("Authorization",`Bearer ${trainerUserToken}`);
 
-            it("Should return updated exercise set", async() => {})
-            it("Should return updated exercise sets", async() => {})
+            expect(res.statusCode).to.eql(404);
+          });
+        
+          it("Should return 404 when data contain unknown id's", 
+          async () => {
+            let res1 = await chai.requester
+              .put("/activities/team/100/activity/fitness/2")
+              .send({
+                data: [
+                  {
+                    id: 100,
+                    ...helperObjects.validPostData[0],
+                  },
+                ],
+              })
+              .set("Authorization", `Bearer ${trainerUserToken}`);
 
-            it("Should return status", async() => {})
-          }
-      );
- */
+            let res2 = await chai.requester
+              .put("/activities/team/100/activity/fitness/2")
+              .send({
+                data: [
+                  {
+                    id: 17,
+                    ...helperObjects.validPostData[0],
+                    // Overwrite with unknown id
+                    exercisesEquipmentId: 100, 
+                  },
+                ],
+              })
+              .set("Authorization", `Bearer ${trainerUserToken}`);
+
+              expect(res1.statusCode).to.eql(404);
+              expect(res2.statusCode).to.eql(404);
+          });
+        
+          it("Should return 400 when invalid values provided within data", async () => {
+            let res = await chai.requester
+              .put("/activities/team/1/activity/fitness/2")
+              .send({
+                data: [
+                  {
+                    id: 7,
+                    userTeamActivitiesId: 2,
+                    // Should allow only two decimals
+                    assignedExWeight: 20.125,
+                  },
+                ],
+              })
+              .set("Authorization", `Bearer ${trainerUserToken}`);
+
+              expect(res.statusCode).to.eql(400);
+          });
+
+          it("Should return updated exercise set", async() => {
+            let res = await chai.requester
+              .put("/activities/team/1/activity/fitness/2")
+              .send({
+                data: [
+                  {
+                    id: 17,
+                    userTeamActivitiesId: 15,
+                    assignedExWeight: 100.00,
+                  },
+                ],
+              })
+              .set("Authorization", `Bearer ${trainerUserToken}`);
+              expect(res.statusCode).to.eql(200);
+              expect(res.body.data[0]).to.have.all.keys(
+                "id",
+                "userTeamActivitiesId",
+                "exercisesEquipmentId",
+                "assignedExWeight",
+                "assignedExRepetitions",
+                "assignedExDuration",
+                "assignedExDistance",
+                "assignedExVariation",
+                "updatedAt"
+              )
+              // Ignoring createdAt for now.
+              expect(res.body.data[0]).to.include({
+                ...helperObjects.validPostData[0],
+                id: 17,
+                assignedExWeight: 100,
+              })
+          });
+
+          it("Should return updated exercise sets", async() => {
+            let res = await chai.requester
+              .put("/activities/team/1/activity/fitness/2")
+              .send({
+                data: [
+                  {
+                    id: 18,
+                    ...helperObjects.validPostData[1],
+                    // Update duration
+                    assignedExDuration: 60
+                  },
+                  {
+                    id: 19,
+                    ...helperObjects.validPostData[2],
+                    // Update assigned weight & repetitions
+                    assignedExWeight: 100,
+                    assignedExRepetitions: 2,
+                  },
+                ],
+              })
+              .set("Authorization", `Bearer ${trainerUserToken}`);
+
+              expect(res.statusCode).to.eql(200);
+              expect(res.body.data).to.be.ofSize(2);
+              let keys = [
+                "id",
+                "userTeamActivitiesId",
+                "exercisesEquipmentId",
+                "assignedExWeight",
+                "assignedExRepetitions",
+                "assignedExDuration",
+                "assignedExDistance",
+                "assignedExVariation",
+                "updatedAt",
+              ];
+              expect(res.body.data[0]).to.have.all.keys(...keys);
+              expect(res.body.data[1]).to.have.all.keys(...keys);
+              // Ignoring createdAt
+              expect(res.body.data[0]).to.include({
+                ...helperObjects.validPostData[1],
+                id: 18,
+                assignedExDuration: 60
+              })
+              expect(res.body.data[1]).to.include({
+                ...helperObjects.validPostData[2],
+                id: 19,
+                assignedExWeight: 100,
+                assignedExRepetitions: 2,
+              })
+          });
+        })
+
+        describe(":: Delete exercise set(s)", () => {
+          it("Should return 404 when unknown id provided for deletion", 
+            async() => {
+              let res = await chai.requester
+                .put("/activities/team/1/activity/fitness/2")
+                .send({
+                  data: [100],
+                })
+                .set("Authorization", `Bearer ${trainerUserToken}`);
+            }
+          );
+
+          it("Should return 400 and not complete delete transaction if one of id(s) unknown",
+            async() => {
+              let res = await chai.requester
+                .put("/activities/team/1/activity/fitness/2")
+                .send({
+                  data: [3, 100],
+                })
+                .set("Authorization", `Bearer ${trainerUserToken}`);
+
+              expect(res.statusCode).to.eql(400);
+              // DB check, should still exist:
+              let dbResult = await ExerciseSets.query().select("id").where("id",2)
+              expect(dbResult).to.be.ofSize(1);
+            }
+          )
+
+          it("Should delete exercise set", async() => {
+            let res = await chai.requester
+              .put("/activities/team/1/activity/fitness/2")
+              .send({
+                data: [17],
+              })
+              .set("Authorization", `Bearer ${trainerUserToken}`);
+
+            expect(res.statusCode).to.eql(204);
+            //DB check
+
+            let dbResult = await ExerciseSets.query().select("id").where("id", 17)
+            expect(dbResult).to.be.ofSize(0);
+          });
+
+          it("Should delete exercise sets", async() => {
+            let res = await chai.requester
+              .put("/activities/team/1/activity/fitness/2")
+              .send({
+                data: [18, 19],
+              })
+              .set("Authorization", `Bearer ${trainerUserToken}`);
+
+            expect(res.statusCode).to.eql(204);
+            let dbResult = await ExerciseSets.query()
+              .select("id")
+              .whereIn("id", [18,19]);
+            expect(dbResult).to.be.ofSize(0);
+          });
+        });
+      });
     });
 });

@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import TeamActivities from "../../db/models/teamActivities.model.js";
 import UserTeamActivities from "../../db/models/userTeamActivities.model.js";
 import _ from "lodash";
+import Teams from "../../db/models/teams.model.js";
 
 dotenv.config({ path: "../../.env" });
 
@@ -110,9 +111,13 @@ export async function checkActivitiesPriviledgePlugin(fastify, options) {
           PUT: _.without(allTeamRoles, "Athlete", "Staff"),
         })
 
-
-      if (!request.user.roles.includes("admin")) {
-        // Check the teamRole of a user:
+      if(request.user.roles.includes("user")) {
+        // Check if team exists:
+        await Teams.query()
+        .where("id", request.params.teamId)
+        .throwIfNotFound()
+        
+        // Check the teamRole of a user
         const teamMember = await UserTeams.query()
           .select("id", "teamRole")
           .where({
@@ -120,9 +125,6 @@ export async function checkActivitiesPriviledgePlugin(fastify, options) {
             userId: request.user.id,
           })
           .first()
-          .throwIfNotFound();
-
-        console.log(teamMember);
 
         if(!teamMember) {
           // Request user not part of the team
@@ -136,35 +138,56 @@ export async function checkActivitiesPriviledgePlugin(fastify, options) {
             teamRole === "Athlete" && 
             allowedRolesAndMethods.get(route)[method].includes("Athlete")
           ) {
-            // Routes, which need userTeamId === request user's userTeamId check.
-            let checkForUserTeamIdRoutes = [
-              "/activities/team/:teamId/activity/fitness/member/:userTeamId",
-              "/activities/team/:teamId/activity/:activityId/fitness/member/:userTeamId/exercises",
-            ];
+            /**
+             * Request made by Athlete
+             * Check if athlete requesting own fitness activities
+             * Check if athlete is participant of activity
+             * Check if request.params.userTeamId equals to athlete's teamId
+             */
+            let requestActivityId = parseInt(request.params.activityId) || false;
+            let requestUserTeamId = parseInt(request.params.userTeamId) || false;
+
+            if (route ===
+              "/activities/team/:teamId/activity/fitness/member/:userTeamId" &&
+              requestUserTeamId !== id
+            ) {
+              reply.forbidden();
+            }
             
             let isParticipantOfActivity = await UserTeamActivities.query()
               .where({
                 userTeamId: id,
-                ...(route !== checkForUserTeamIdRoutes[0] &&
-                  {teamActivityId: request.params.activityId}
+                ...(
+                  requestActivityId &&
+                  {teamActivityId: requestActivityId}
                 )
               })
               .returning("id, userTeamId")
               .first();
 
-              // Requesting user might be participant but requesting with wrong userTeamId (not the same as request user has)
               if (
-                checkForUserTeamIdRoutes.includes(route)
-                && 
-                isParticipantOfActivity.userTeamId !==
-                parseInt(request.params.userTeamId) 
+                requestUserTeamId &&
+                !requestActivityId && 
+                !isParticipantOfActivity
               ) {
-                reply.forbidden();
+                  reply.forbidden();
+              } else if(
+                !requestUserTeamId &&
+                requestActivityId &&
+                !isParticipantOfActivity
+              ) {
+                  reply.forbidden();
+              } else if(
+                requestActivityId &&
+                requestUserTeamId &&
+                isParticipantOfActivity.userTeamId !==
+                requestUserTeamId
+              ) {
+                  reply.forbidden();
               } else {
                 request.user.teamRole = teamRole;
                 request.user.userTeamId = id;
               }
-
           } else {
             // Check the priviledges per method & route of HTTP-request:
             // Include additional information to user property on request
@@ -182,5 +205,5 @@ export async function checkActivitiesPriviledgePlugin(fastify, options) {
     } catch (error) {
       errorHandler(error, reply);
     }
-  })
+  });
 }

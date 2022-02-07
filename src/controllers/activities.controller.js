@@ -5,6 +5,7 @@ import UserTeams from "../../db/models/userTeams.model.js";
 import UserTeamActivities from "../../db/models/userTeamActivities.model.js";
 import ExerciseSets from "../../db/models/exerciseSets.model.js";
 import dbFitnessResultHandlers from "../controllers/dbResultHandlers/exerciseSets.js";
+import ExercisesEquipment from "../../db/models/exercisesEquipment.model.js";
 
 
 //TODO: Refactor queries to separate files for routes.
@@ -452,32 +453,45 @@ async function fitnessByUserTeamActivityId(request, reply) {
   }
 }
 
-// Helper function for create & update
-async function checkRequestIdsAgainstDB(data, activityId) {
-  // Verify that within batch of data, the userTeamActivitiesId & activityId is found within UserTeamActivities table
-    // From request body data, extract distinct userTeamActivitiesIds:
-    let requestIds = data.reduce((acc, currentVal) => {
-      if(acc.length > 0 && acc[acc.length-1][0][0] === currentVal.userTeamActivitiesId) {
-        return acc;
-      } else {
-        acc.push([currentVal.userTeamActivitiesId, parseInt(activityId)])
-        return acc;
-      }
-    },[])
 
-    // Find matching rows from userTeamActivities table:
-    let dbRowMatches = await UserTeamActivities.query()
-    .whereIn(["id", "teamActivityId"], requestIds)
-    .select("id");
-
-    console.log(requestIds.length, dbRowMatches.length);
-    // .throwIfNotFound() not possible method as query ignores unknown records, 
-    // check for array length equality, eg [1] === [[2,2]]:
-    if(dbRowMatches.length !== requestIds.length) {
-      return false;
+/**
+ * Verify that activityId & userTeamActivityId pairs exist in db join table
+ * Return boolean
+ */
+async function requestIdsExistOnDb(data, activityId, reply) {
+  // Verify that activityId & userTeamActivityId pair exists in join table
+  let requestIds = data.reduce((acc, currentVal) => {
+    if(acc.length > 0 && acc[acc.length-1][0][0] === currentVal.userTeamActivitiesId) {
+      return acc;
     } else {
-      return true;
+      acc.push([currentVal.userTeamActivitiesId, parseInt(activityId)])
+      return acc;
     }
+  },[])
+  let dbIdMatches = await UserTeamActivities.query()
+  .whereIn(["id", "teamActivityId"], requestIds)
+  .select("id");
+
+  if(requestIds.length === dbIdMatches.length) return true; else false;
+
+ /*  // Verify that payload exercisesEquipmentIds exist in join table
+  if(data[0].exercisesEquipmentId) {
+    let payloadExEqIds = data.map(
+      (exerciseSet) => exerciseSet.exercisesEquipmentId
+    );
+    let dbExEqIdMatches = await ExercisesEquipment.query()
+      .select("id")
+      .whereIn("id", payloadExEqIds)
+  } */
+
+  /* if(
+    requestIds.length === dbIdMatches.length &&
+    payloadExEqIds.length === dbExEqIdMatches.length
+  ) {
+    return true;
+  } else {
+    return false;
+  } */
 }
 
 async function createExerciseSets(request, reply) {
@@ -485,16 +499,16 @@ async function createExerciseSets(request, reply) {
     let {data} = request.body;
     let {activityId} = request.params;
     // Verify that unknown id's not provided within request data
-    if(!await checkRequestIdsAgainstDB(data, activityId)) {
-      reply.badRequest();
+    if(!await requestIdsExistOnDb(data, activityId)) {
+      reply.notFound();
     } else {
       // Batch insert:
       let trx = await ExerciseSets.startTransaction();
       let createdExerciseSets;
         try {
           createdExerciseSets = await ExerciseSets.query()
-              .insert(data)
-              .returning("*")
+            .insert(data)
+            .returning("*")
           await trx.commit();
         } catch (error) {
           await trx.rollback();
@@ -508,50 +522,83 @@ async function createExerciseSets(request, reply) {
 }
 
 async function modifyExerciseSets(request, reply) {
+  /**
+   * Update one or multiple assigned exercise set(s)
+   * Delete one or multiple assigned exercise set(s)
+   */
   try {
-    // Update one or multiple assigned exercise set(s)
-    // Delete one or multiple assigned exercise set(s)
-    let {data} = request.body;
-
-    if(
-      data.length > 0 
-      && 
-      typeof data[0] === "object" 
-      && 
+    let { data } = request.body;
+    let { activityId } = request.params;
+    // Data array of objects:
+    if (
+      data.length > 0 &&
+      typeof data[0] === "object" &&
       typeof data[0] !== "null"
-      ) {
-      // Request is meant to be update of DB records
+    ) {
       // Verify that unknown id's not provided within request data
-      await matchRequestIdsWithExistingTableIds(request, reply);
+      if (!(await requestIdsExistOnDb(data, activityId))) {
+        reply.notFound();
+      } else {
+        await batchExerciseSetsUpdate(data);
+        let updatedIds = data.map((exerciseSet) => exerciseSet.id);
+        let updatedExerciseSets = await ExerciseSets.query()
+          .select(
+            "id",
+            "userTeamActivitiesId",
+            "exercisesEquipmentId",
+            "assignedExWeight",
+            "assignedExRepetitions",
+            "assignedExDuration",
+            "assignedExDistance",
+            "assignedExVariation",
+            "updatedAt"
+          )
+          .whereIn("id", updatedIds);
+        reply.send({ data: updatedExerciseSets });
 
-      // Update exercise set(s)
-      let trx = await ExerciseSets.startTransaction();
-      try {
-        let updatedExerciseSets=[];
-
-        data.forEach(async (exerciseSet) => {
-          const { userTeamActivitiesId, ...updateInformation } = exerciseSet;
-          let updatedExerciseSet = await ExerciseSets.query().patch(updateInformation);
-          updatedExerciseSets.push(updatedExerciseSet);
-          await trx.commit();
-        });
-
-        reply.send({data: updatedExerciseSets})
-      } catch (error) {
-        await trx.rollback();
-        reply.badRequest();
+        async function batchExerciseSetsUpdate(data) {
+          let trx = await ExerciseSets.startTransaction();
+          try {
+            // Update exercise set(s)
+            await Promise.all(
+              data.map((exerciseSet) => {
+                let { id, ...updateInformation } = exerciseSet;
+                return ExerciseSets.query()
+                  .patch(updateInformation)
+                  .where("id", id);
+              })
+            );
+            await trx.commit();
+          } catch (error) {
+            await trx.rollback();
+            reply.badRequest(error);
+          }
+        }
       }
-    } else {
-      // Delete exercise set(s)
-      let trx = await ExerciseSets.startTransaction();
-      try {
-        await ExerciseSets.query().del().whereIn("id", data);
-        await trx.commit();
-      } catch (error) {
-        await trx.rollback();
-        reply.badRequest();
-      }
+    } else if (data.length > 0) {
+      /**
+       * Delete exercise set(s) by id(s)
+       * id(integer)
+       * Data [id, id,.]
+       */
+      await deleteExerciseSets(data);
       reply.status(204).send();
+
+      async function deleteExerciseSets(data) {
+        let trx = await ExerciseSets.startTransaction();
+        try {
+          await Promise.all(
+            data.map((id) => {
+              return ExerciseSets.query().deleteById(id).throwIfNotFound();
+            })
+          );
+          await trx.commit();
+        } catch (error) {
+          await trx.rollback();
+          //? Or should it be notFound()?
+          reply.badRequest();
+        }
+      }
     }
   } catch (error) {
     errorHandler(error, reply);
