@@ -3,7 +3,7 @@ import preHandlers from "../controllers/preHandlers/preHandlers.js";
 import activitiesHandlers from "../controllers/activities.controller.js"
 import activitiesSchemas from "../controllers/validationSchemas/activities.schema.js";
 const { authenticateUser } = validationHandlers;
-const { checkActivitiesPriviledge } = preHandlers;
+const { checkActivitiesPriviledge, checkForUnknownUrlIds } = preHandlers;
 
 //TODO: Query parameters.
 
@@ -13,7 +13,7 @@ export default [
     url: "/activities/team/:teamId",
     schema: activitiesSchemas.allTeamActivities,
     preValidation: authenticateUser,
-    preHandler: checkActivitiesPriviledge,
+    preHandler: [checkForUnknownUrlIds, checkActivitiesPriviledge],
     handler: activitiesHandlers.allTeamActivities,
     config: {
       description: "Retrieve created activities of the team",
@@ -24,7 +24,7 @@ export default [
     url: "/activities/team/:teamId",
     schema: activitiesSchemas.createTeamActivity,
     preValidation: authenticateUser,
-    preHandler: checkActivitiesPriviledge,
+    preHandler: [checkForUnknownUrlIds, checkActivitiesPriviledge],
     handler: activitiesHandlers.createTeamActivity,
     config: {
       description: "Create activity for team",
@@ -35,29 +35,29 @@ export default [
     url: "/activities/team/:teamId/activity/:activityId",
     schema: activitiesSchemas.teamActivityById,
     preValidation: authenticateUser,
-    preHandler: checkActivitiesPriviledge,
+    preHandler: [checkForUnknownUrlIds, checkActivitiesPriviledge],
     handler: activitiesHandlers.teamActivityById,
     config: {
       description: "Retrieve activity by id",
     },
   },
   {
-    method: "GET", // Only staff members
+    method: "GET",
     url: "/activities/team/:teamId/activity/fitness",
     schema: activitiesSchemas.allFitnessActivities,
     preValidation: authenticateUser,
-    preHandler: checkActivitiesPriviledge,
+    preHandler: [checkForUnknownUrlIds, checkActivitiesPriviledge],
     handler: activitiesHandlers.allTeamFitnessData,
     config: {
       description: "Retrieve all assigned fitness activities of team",
     },
   },
   {
-    method: "GET", // All members, exception for athlete if part of activity!
+    method: "GET",
     url: "/activities/team/:teamId/activity/fitness/:activityId",
     schema: activitiesSchemas.allFitnessActivities,
     preValidation: authenticateUser,
-    preHandler: checkActivitiesPriviledge,
+    preHandler: [checkForUnknownUrlIds, checkActivitiesPriviledge],
     handler: activitiesHandlers.fitnessByActivityId,
     config: {
       description:
@@ -65,22 +65,22 @@ export default [
     },
   },
   {
-    method: "GET", // All members, athlete only if userTeamId === athlete
+    method: "GET",
     url: "/activities/team/:teamId/activity/fitness/member/:userTeamId",
     schema: activitiesSchemas.allFitnessActivities,
     preValidation: authenticateUser,
-    preHandler: checkActivitiesPriviledge,
+    preHandler: [checkForUnknownUrlIds, checkActivitiesPriviledge],
     handler: activitiesHandlers.fitnessByAthleteId,
     config: {
       description: "Retrieve fitness activities of a team member",
     },
   },
   {
-    method: "GET", // All members, athlete only if userTeamId === athlete
+    method: "GET",
     url: "/activities/team/:teamId/activity/:activityId/fitness/member/:userTeamId/exercises",
     schema: activitiesSchemas.fitnessByUserTeamActivityId,
     preValidation: authenticateUser,
-    preHandler: checkActivitiesPriviledge,
+    preHandler: [checkForUnknownUrlIds, checkActivitiesPriviledge],
     handler: activitiesHandlers.fitnessByUserTeamActivityId,
     config: {
       description:
@@ -88,11 +88,23 @@ export default [
     },
   },
   {
-    method: "POST", // Only trainer, coach, physio
+    method: "PUT",
+    url: "/activities/team/:teamId/activity/:activityId/fitness/member/:userTeamId/exercises",
+    schema: activitiesSchemas.updateCompletedExerciseSets,
+    preValidation: authenticateUser,
+    preHandler: [checkForUnknownUrlIds, checkActivitiesPriviledge],
+    handler: activitiesHandlers.updateCompletedExerciseSets,
+    config: {
+      description:
+        "Update status for assigned exercise sets or update completed exercise values",
+    },
+  },
+  {
+    method: "POST",
     url: "/activities/team/:teamId/activity/fitness/:activityId",
     schema: activitiesSchemas.createExerciseSets,
     preValidation: authenticateUser,
-    preHandler: checkActivitiesPriviledge,
+    preHandler: [checkForUnknownUrlIds, checkActivitiesPriviledge],
     handler: activitiesHandlers.createExerciseSets,
     config: {
       description:
@@ -100,11 +112,11 @@ export default [
     },
   },
   {
-    method: "PUT", // Only trainer, coach, physio
+    method: "PUT",
     url: "/activities/team/:teamId/activity/fitness/:activityId",
     schema: activitiesSchemas.updateOrDeleteExerciseSets,
     preValidation: authenticateUser,
-    preHandler: checkActivitiesPriviledge,
+    preHandler: [checkForUnknownUrlIds, checkActivitiesPriviledge],
     handler: activitiesHandlers.modifyExerciseSets,
     config: {
       description:
@@ -116,7 +128,7 @@ export default [
     url: "/activities/team/:teamId/member/:userTeamId",
     schema: activitiesSchemas.teamActivitiesByUserTeamId,
     preValidation: authenticateUser,
-    preHandler: checkActivitiesPriviledge,
+    preHandler: [checkForUnknownUrlIds, checkActivitiesPriviledge],
     handler: activitiesHandlers.teamActivitiesByUserTeamId,
     config: {
       description: "Retrieve athlete activities",
@@ -127,7 +139,7 @@ export default [
     url: "/activities/team/:teamId/activity/:activityId",
     schema: activitiesSchemas.updateTeamActivity,
     preValidation: authenticateUser,
-    preHandler: checkActivitiesPriviledge,
+    preHandler: [checkForUnknownUrlIds, checkActivitiesPriviledge],
     handler: activitiesHandlers.updateTeamActivity,
     config: {
       description: "Update team activity by id",
@@ -138,7 +150,7 @@ export default [
     url: "/activities/team/:teamId/activity/:activityId",
     schema: activitiesSchemas.deleteTeamActivity,
     preValidation: authenticateUser,
-    preHandler: checkActivitiesPriviledge,
+    preHandler: [checkForUnknownUrlIds, checkActivitiesPriviledge],
     handler: activitiesHandlers.deleteTeamActivity,
     config: {
       description: "Delete team activity by id",
@@ -149,7 +161,7 @@ export default [
     url: "/activities/team/:teamId/activity/:activityId/participants",
     schema: activitiesSchemas.insertActivityParticipants,
     preValidation: authenticateUser,
-    preHandler: checkActivitiesPriviledge,
+    preHandler: [checkForUnknownUrlIds, checkActivitiesPriviledge],
     handler: activitiesHandlers.insertActivityParticipants,
     config: {
       description: "Add participant(s) to team activity",
@@ -160,7 +172,7 @@ export default [
     url: "/activities/team/:teamId/activity/:activityId/participants",
     schema: activitiesSchemas.deleteActivityParticipants,
     preValidation: authenticateUser,
-    preHandler: checkActivitiesPriviledge,
+    preHandler: [checkForUnknownUrlIds, checkActivitiesPriviledge],
     handler: activitiesHandlers.deleteActivityParticipants,
     config: {
       description: "Delete participant(s) from team activity",

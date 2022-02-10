@@ -13,7 +13,8 @@ import {
   authPlugin,
   checkStaffAdminRolePlugin,
   checkTrainingAdminRolePlugin,
-  checkActivitiesPriviledgePlugin
+  checkActivitiesPriviledgePlugin,
+  checkForUnknownUrlIdsPlugin
 } from "./src/plugins/fastifyPlugins.js";
 import appRoutes from "./src/routes/index.js";
 import { adminCheck } from "./src/decorators/fastifyDecorators.js";
@@ -53,6 +54,7 @@ fastify.register(fp(authPlugin));
 fastify.register(fp(checkStaffAdminRolePlugin));
 fastify.register(fp(checkTrainingAdminRolePlugin));
 fastify.register(fp(checkActivitiesPriviledgePlugin));
+fastify.register(fp(checkForUnknownUrlIdsPlugin));
 fastify.decorate("checkAdminRole", adminCheck);
 
 appRoutes.forEach((endpoint) => {

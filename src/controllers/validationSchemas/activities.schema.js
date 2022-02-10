@@ -5,7 +5,8 @@ let {
   allFitnessActivities,
   fitnessByUserTeamActivityId,
   createExerciseSets,
-  updateOrDeleteExerciseSets
+  updateOrDeleteExerciseSets,
+  updateCompletedExerciseSets,
 } = fitnessSchemas;
 
 let createObjectSchema = {
@@ -252,5 +253,6 @@ export default {
   allFitnessActivities,
   fitnessByUserTeamActivityId,
   createExerciseSets,
-  updateOrDeleteExerciseSets
+  updateOrDeleteExerciseSets,
+  updateCompletedExerciseSets
 }

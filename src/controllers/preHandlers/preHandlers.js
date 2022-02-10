@@ -22,6 +22,10 @@ function checkActivitiesPriviledge(request, reply) {
   return request.checkActivitiesPriviledge(request, reply);
 }
 
+function checkForUnknownUrlIds(request, reply) {
+  return fastify.checkForUnknownUrlIds(request, reply);
+}
+
 async function checkResourceCreator(request, reply) {
   if (!request.user.roles.includes("admin")) {
     const resourceModels = {
@@ -48,10 +52,12 @@ async function checkResourceCreator(request, reply) {
   }
 }
 
+
 export default {
   checkAdminRole,
   checkTrainingAdminRole,
   checkStaffAdminRole,
   checkResourceCreator,
   checkActivitiesPriviledge,
+  checkForUnknownUrlIds,
 };

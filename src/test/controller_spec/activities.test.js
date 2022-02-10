@@ -75,6 +75,7 @@ describe("::: ACTIVITIES CONTROLLER TESTS :::", () => {
             .post("/activities/team/1")
             .send({
               activityTypeId: 2,
+              createdBy: 5,
               venueId: 2,
               activityStart: "2022-02-02T20:00",
               activityEnd: "2022-02-02T20:00"
@@ -726,8 +727,16 @@ describe("::: ACTIVITIES CONTROLLER TESTS :::", () => {
         });
 
         it("Should delete activity by activityId", async () => {
+          let {id} = await TeamActivities.query().insert({
+            teamId: 1,
+            createdBy: 7,
+            activityTypeId: 4,
+            venueId: 2,
+            activityStart: "2022-10-10T18:00",
+            activityEnd: "2022-10-10T20:00"
+          }).first()
           let res = await chai.requester
-            .delete("/activities/team/1/activity/3")
+            .delete(`/activities/team/1/activity/${id}`)
             .set("Authorization", `Bearer ${trainerUserToken}`);
 
           expect(res.statusCode).to.eql(204);

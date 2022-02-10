@@ -242,9 +242,63 @@ let updateOrDeleteExerciseSets = {
   },
 };
 
+let updateCompletedExerciseSets = {
+  body: {
+    type: "object",
+    required: ["data"],
+    properties: {
+      data: {
+        type: "array",
+        items: {
+          type: "object",
+          required: ["userTeamActivitiesId"],
+          properties: {
+            id: { type: "integer" },
+            userTeamActivitiesId: { type: "integer" },
+            assignedSetDone: { type: "boolean" },
+            assignedSetDonePartially: { type: "boolean" },
+            completedExWeight: { type: ["number", "null"], multipleOf: 0.01 },
+            completedExRepetitions: { type: ["integer", "null"] },
+            completedExDuration: { type: ["integer", "null"] },
+            completedExDistance: { type: ["integer", "null"] },
+            completedExSetNotes: { type: ["string", "null"] },
+          },
+        },
+      },
+    },
+  },
+  response: {
+    200: {
+      type: "object",
+      properties: {
+        data: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              id: { type: "integer" },
+              userTeamActivitiesId: { type: "integer" },
+              assignedSetDone: { type: "boolean" },
+              assignedSetDonePartially: { type: "boolean" },
+              completedExWeight: { type: ["number", "null"], multipleOf: 0.01 },
+              completedExRepetitions: { type: ["integer", "null"] },
+              completedExDuration: { type: ["integer", "null"] },
+              completedExDistance: { type: ["integer", "null"] },
+              completedExSetNotes: { type: ["string", "null"] },
+              updatedAt: { type: "string", format: "date-time" }
+            },
+          },
+        },
+      },
+    },
+    ...errors
+  },
+};
+
 export default {
   allFitnessActivities,
   fitnessByUserTeamActivityId,
   createExerciseSets,
-  updateOrDeleteExerciseSets
+  updateOrDeleteExerciseSets,
+  updateCompletedExerciseSets
 }

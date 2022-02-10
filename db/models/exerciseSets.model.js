@@ -12,23 +12,29 @@ class ExerciseSets extends Model {
     this.updatedAt = new Date().toISOString();
 
     /**
-     * If assignedExWeight not null, assignedExRepetitions cannot be null
+     * If ExWeight not null, ExRepetitions cannot be null
      * ! Not operator used to check also 0, undefined, false,empty string etc.
      * Might be overkill, Fastify and Objection already validate payload
      */
-    if(
-      !this.assignedExWeight && this.assignedExRepetitions
-      ||
-      this.assignedExWeight && !this.assignedExRepetitions
-      ) {
+    if (
+      (!this.assignedExWeight && this.assignedExRepetitions) ||
+      (this.assignedExWeight && !this.assignedExRepetitions) ||
+      (
+        this.assignedSetDonePartially && 
+        !this.completedExWeight && 
+        this.completedExRepetitions
+      ) ||
+      (
+        this.assignedSetDonePartially && 
+        this.completedExWeight &&
+        !this.completedExRepetitions
+      )
+    ) {
       throw new objection.ValidationError({
-        message: "When assigning exercise with weight, repetitions has to be assigned.",
-        type: "Either assignedExWeight or assignedExRepetitions cannot be null when one has value other than null.",
-        data: {
-          assignedExWeight: this.assignedExWeight,
-          assignedExRepetitions: this.assignedExRepetitions
-        }
-      })
+        message:
+          "When assigning exercise with weight, repetitions has to be assigned.",
+        type: "Either ExWeight or ExRepetitions cannot be null when one has value other than null.",
+      });
     }
   }
 
