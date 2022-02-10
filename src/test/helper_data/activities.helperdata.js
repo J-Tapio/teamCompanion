@@ -613,9 +613,80 @@ let validPostData = [
   },
 ];
 
+// Completed exerciseSets
+
+let completedInvalidData = [
+  {
+    id: 100,
+    userTeamActivitiesId: 15,
+    assignedSetDone: false,
+    assignedSetDonePartially: true,
+    completedExWeight: 40,
+    completedExRepetitions: 8,
+  },
+  {
+    id: 18,
+    userTeamActivitiesId: 15,
+    assignedSetDone: true,
+    assignedSetDonePartially: true,
+    completedExWeight: 40,
+    completedExRepetitions: 8,
+  },
+  {
+    id: 18,
+    userTeamActivitiesId: 15,
+    assignedSetDone: false,
+    assignedSetDonePartially: true,
+    completedExWeight: 40,
+    completedExRepetitions: null,
+  },
+  {
+    id: 8,
+    assignedSetDone: true,
+    assignedSetDonePartially: true,
+  },
+  {
+    id: 9,
+    userTeamActivitiesId: 3,
+    assignedSetDonePartially: true,
+    completedExDuration: 20,
+    completedExDistance: 1000
+  },
+]
+
+let completedValidData = [
+  {
+    userTeamActivitiesId: 2,
+    assignedSetDone: true,
+  },
+  {
+    id: 8,
+    userTeamActivitiesId: 3,
+    assignedSetDonePartially: true,
+    completedExDuration: 25,
+    completedExSetNotes: "Couldnt finish due to cramps in legs."
+  },
+  {
+    id: 9,
+    userTeamActivitiesId: 3,
+    assignedSetDonePartially: true,
+    completedExWeight: 30,
+    completedExRepetitions: 8,
+    completedExSetNotes: "Wanted to try with extra weight"
+  },
+  {
+    id: 10,
+    userTeamActivitiesId: 3,
+    assignedSetDone: true,
+  },
+
+]
+
 export default {
   allFitnessActivities,
   invalidPostData,
-  validPostData
+  validPostData,
+  completedInvalidData,
+  completedValidData,
 }
 

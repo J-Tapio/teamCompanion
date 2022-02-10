@@ -5,7 +5,6 @@ import UserTeams from "../../db/models/userTeams.model.js";
 import UserTeamActivities from "../../db/models/userTeamActivities.model.js";
 import ExerciseSets from "../../db/models/exerciseSets.model.js";
 import dbFitnessResultHandlers from "../controllers/dbResultHandlers/exerciseSets.js";
-import ExercisesEquipment from "../../db/models/exercisesEquipment.model.js";
 
 
 //TODO: Refactor queries to separate files for routes.
@@ -453,7 +452,6 @@ async function fitnessByUserTeamActivityId(request, reply) {
   }
 }
 
-
 /**
  * Verify that activityId & userTeamActivityId pairs exist in db join table
  * Return boolean
@@ -461,37 +459,25 @@ async function fitnessByUserTeamActivityId(request, reply) {
 async function requestIdsExistOnDb(data, activityId, reply) {
   // Verify that activityId & userTeamActivityId pair exists in join table
   let requestIds = data.reduce((acc, currentVal) => {
-    if(acc.length > 0 && acc[acc.length-1][0][0] === currentVal.userTeamActivitiesId) {
+    if(acc.length > 0 && acc[acc.length-1][0] === currentVal.userTeamActivitiesId) {
       return acc;
     } else {
       acc.push([currentVal.userTeamActivitiesId, parseInt(activityId)])
       return acc;
     }
-  },[])
+  },[]);
+  
   let dbIdMatches = await UserTeamActivities.query()
   .whereIn(["id", "teamActivityId"], requestIds)
   .select("id");
 
-  if(requestIds.length === dbIdMatches.length) return true; else false;
+  console.log(dbIdMatches);
 
- /*  // Verify that payload exercisesEquipmentIds exist in join table
-  if(data[0].exercisesEquipmentId) {
-    let payloadExEqIds = data.map(
-      (exerciseSet) => exerciseSet.exercisesEquipmentId
-    );
-    let dbExEqIdMatches = await ExercisesEquipment.query()
-      .select("id")
-      .whereIn("id", payloadExEqIds)
-  } */
-
-  /* if(
-    requestIds.length === dbIdMatches.length &&
-    payloadExEqIds.length === dbExEqIdMatches.length
-  ) {
+  if(requestIds.length === dbIdMatches.length) {
     return true;
-  } else {
-    return false;
-  } */
+  } else { 
+    return false; 
+  }
 }
 
 async function createExerciseSets(request, reply) {
@@ -605,6 +591,150 @@ async function modifyExerciseSets(request, reply) {
   }
 }
 
+async function updateCompletedExerciseSets(request, reply) {
+  /**
+   * Validate payload Ids by matching them against existing DB records.
+   * Throw error if payload data property assignedSetDone true,
+   * and contains other properties than id
+   * Transaction update. Rollback if even one fails within batch.
+   * Return only status if request by Athlete, otherwise detailed information.
+   */
+
+  let { data } = request.body;
+  let { activityId } = request.params;
+
+  if(
+    data.length === 1 && 
+    Object.keys(data[0]).length === 2 &&
+    !data[0].id &&
+    data[0].userTeamActivitiesId &&
+    data[0].assignedSetDone
+  ) {
+      await ExerciseSets.query()
+      .patch({assignedSetDone: data[0].assignedSetDone})
+      .where("userTeamActivitiesId", data[0].userTeamActivitiesId).throwIfNotFound();
+
+      reply.status(200)
+      .send({message: "Successfully updated all exercise sets as done."});
+  } else {
+    if (!(await requestIdsExistOnDb(data, activityId))) {
+      reply.notFound();
+    }
+    let requestIdsForUpdate = data.map((exerciseSet) => {
+      if(exerciseSet.id && exerciseSet.userTeamActivitiesId) {
+        return [exerciseSet.id, exerciseSet.userTeamActivitiesId]
+      } else {
+        reply.badRequest(
+          "Sent data is missing id and/or userTeamActivitiesId"
+          );
+      }
+  });
+  
+  
+    let dbMatches = await ExerciseSets.query()
+      .select("id")
+      .whereIn(["id", "userTeamActivitiesId"], requestIdsForUpdate);
+  
+    if (data.length !== dbMatches.length) {
+      reply.notFound();
+    } else {
+
+      async function dbPatchCompletedExerciseSets(data) {
+        let exerciseSetsToUpdate = data.map(async (exerciseSet) => {
+          let { id, ...updateInformation } = exerciseSet;
+          // ExerciseSet data cannot contain both properties,
+          // assignedSetDone && assignedSetDonePartially
+          if (
+            updateInformation.assignedSetDone === "true" &&
+            updateInformation.assignedSetDonePartially === "true"
+          ) {
+            reply.badRequest(
+              "Assigned exercise can be either done or partially completed"
+            );
+          }
+          // For every exerciseSet, check assigned exerciseSet ?
+          // Make sure that if exercisesEquipmentId === strength or cardio
+          // then valid properties are being updated!
+          let assignedExercise = await ExerciseSets.query()
+            .select(
+              "assignedExWeight",
+              "assignedExRepetitions",
+              "assignedExDuration",
+              "assignedExDistance"
+            )
+            .where("id", id);
+
+          if (
+            assignedExercise.assignedExWeight &&
+            assignedExercise.assignedExRepetitions && 
+            !exerciseSet.completedExWeight && 
+            !exerciseSet.completedExRepetitions
+          ) {
+            reply.badRequest(
+              "Trying to update wrong exercise set information"
+            );
+          } else if (
+            assignedExercise.assignedExDuration &&
+            !exerciseSet.completedExDuration
+          ) { 
+            reply.badRequest(
+              "Trying to update wrong exercise set information"
+            );
+          } else if (
+            assignedExercise.assignedExDistance &&
+            !exerciseSet.completedExDistance
+          ) {
+            reply.badRequest(
+              "Trying to update wrong exercise set information"
+            );
+          } else {
+            return ExerciseSets.query()
+              .patch(updateInformation)
+              .where("id", id)
+              .throwIfNotFound();
+          }
+        });
+
+        let trx = await ExerciseSets.startTransaction();
+        try {
+          await Promise.all(exerciseSetsToUpdate);
+          await trx.commit();
+        } catch (error) {
+          console.log(error);
+          await trx.rollback();
+          reply.badRequest();
+        }
+      }
+
+      await dbPatchCompletedExerciseSets(data);
+      if (request.user.teamRole !== "Athlete") {
+        let updatedExerciseSets = await ExerciseSets.query()
+          .select(
+            "id",
+            "userTeamActivitiesId",
+            "assignedSetDone",
+            "assignedSetDonePartially",
+            "completedExWeight",
+            "completedExRepetitions",
+            "completedExDuration",
+            "completedExDistance",
+            "completedExSetNotes",
+            "updatedAt"
+          )
+          .orderBy("id")
+          .whereIn(
+            "id",
+            data.map((exerciseSet) => exerciseSet.id)
+          );
+        reply.send({ data: updatedExerciseSets });
+      } else {
+        reply.status(200);
+      }
+  
+    }
+  }
+}
+
 
 export default {
   allTeamActivities,
@@ -620,5 +750,6 @@ export default {
   fitnessByActivityId,
   fitnessByUserTeamActivityId,
   createExerciseSets,
-  modifyExerciseSets
+  modifyExerciseSets,
+  updateCompletedExerciseSets
 }
