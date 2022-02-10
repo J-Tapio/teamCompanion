@@ -3,7 +3,6 @@ import Users from "../../db/models/users.model.js";
 
 export async function loginUser(request, reply) {
   try {
-    
     const accessToken = fastify.jwt.sign(
       {id: request.user.id, roles: [request.user.role]}, 
       {expiresIn: "15min"}
