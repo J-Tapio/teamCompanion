@@ -4,7 +4,6 @@ import usersRouter from "./users.route.js";
 import equipmentRouter from "./equipment.route.js"
 import teamsRouter from "./teams.route.js";
 import activitiesRouter from "./activities.route.js";
-import venuesRouter from "./venues.route.js";
 
 export default [
   loginRouter, 
@@ -13,5 +12,4 @@ export default [
   exercisesRouter, 
   equipmentRouter,
   activitiesRouter,
-  venuesRouter
 ].flat();

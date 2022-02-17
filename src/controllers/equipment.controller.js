@@ -1,29 +1,10 @@
-import Equipment from "../../db/models/equipment.model.js";
-import errorHandler from "../tools/dbErrors.js";
-import dbResultHandler from "../controllers/dbResultHandlers/equipment.js";
-
+import errorHandler from "../lib/errorHandler.js";
+import EquipmentQueries from "../controllers/dbQueries/equipment.queries.js";
 
 async function allEquipment(request, reply) {
   try {
-    const data = await Equipment.query()
-      .joinRelated({ exercises: true })
-      .select(
-        "equipment.id",
-        "equipment.equipmentName",
-        "equipment.trainingModality",
-        "equipment.equipmentInfo",
-        "exercises.id as exerciseId",
-        "exercises.exerciseName",
-        "exercises.exerciseInfo",
-        "exercises_join.exerciseVariations",
-        "exercises_join.exercisePositions",
-        "exercises_join.exerciseInformation"
-      )
-      .orderBy("equipment.id", "asc")
-      .orderBy("equipmentId", "asc").throwIfNotFound();
-
-      reply.send(dbResultHandler.allEq(data));
-
+    let data = await EquipmentQueries.allEquipment();
+    reply.send(data);
 
   } catch (error) {
     errorHandler(error, reply);
@@ -32,25 +13,10 @@ async function allEquipment(request, reply) {
 
 async function equipmentById(request, reply) {
   try {
-    const equipment = await Equipment.query()
-      .joinRelated({ exercises: true })
-      .select(
-        "equipment.id",
-        "equipment.equipmentName",
-        "equipment.trainingModality",
-        "equipment.equipmentInfo",
-        "exercises.id as exerciseId",
-        "exercises.exerciseName",
-        "exercises.exerciseInfo",
-        "exercises_join.exerciseVariations",
-        "exercises_join.exercisePositions",
-        "exercises_join.exerciseInformation"
-      )
-      .orderBy("equipmentId", "asc")
-      .where("equipment.id", request.params.id)
-      .throwIfNotFound();
-
-    reply.send(dbResultHandler.byIdEq(equipment));
+    let equipment = await EquipmentQueries.equipmentById({
+      equipmentId: request.params.id
+    });
+    reply.send(equipment);
   } catch (error) {
     errorHandler(error, reply);
   }
@@ -58,12 +24,11 @@ async function equipmentById(request, reply) {
 
 async function createEquipment(request, reply) {
   try {
-    const { id, equipmentName, trainingModality, equipmentInfo, createdAt } =
-      await Equipment.query()
-        .insert({ ...request.body, createdBy: request.user.id })
-        .returning("*");
-        
-    reply.status(201).send({id, equipmentName, trainingModality, equipmentInfo, createdAt });
+    let createdEquipment = await EquipmentQueries.createEquipment({
+      userId: request.user.id,
+      equipmentInformation: request.body,
+    });
+    reply.status(201).send(createdEquipment);
   } catch (error) {
     errorHandler(error, reply);
   }
@@ -71,17 +36,10 @@ async function createEquipment(request, reply) {
 
 async function updateEquipment(request, reply) {
   try {
-    const updatedEquipment = await Equipment.query()
-    .patch(request.body)
-    .where("equipment.id", request.params.id)
-    .returning(
-      "id", 
-      "equipmentName", 
-      "trainingModality", 
-      "equipmentInfo", 
-      "updatedAt")
-    .first()
-    .throwIfNotFound();
+    let updatedEquipment = await EquipmentQueries.updateEquipment({
+      equipmentId: request.params.id,
+      updateInformation: request.body
+    });
 
     reply.send(updatedEquipment);
   } catch (error) {
@@ -91,8 +49,8 @@ async function updateEquipment(request, reply) {
 
 async function deleteEquipment(request, reply) {
   try {
-    await Equipment.query().deleteById(request.params.id).throwIfNotFound();
-    reply.status(204);
+    await EquipmentQueries.deleteEquipment({equipmentId: request.params.id})
+    reply.status(204).send();
   } catch (error) {
     errorHandler(error, reply);
   }

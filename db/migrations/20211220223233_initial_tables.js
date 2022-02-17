@@ -7,6 +7,7 @@ export function up(knex) {
     table.increments("id").primary();
     table.string("email", 100).unique().notNullable();
     table.string("password", 100).notNullable();
+    table.boolean("emailVerified", 100).defaultTo(false);
     table.enu("role", ["admin", "user"]).defaultTo("user");
     table.integer("createdBy").nullable();
     table.string("refresh_token").nullable();
@@ -129,6 +130,12 @@ export function up(knex) {
       .inTable("teams")
       .onUpdate("CASCADE")
       .onDelete("CASCADE");
+    table
+      .timestamp("created_at", { useTz: true, precision: 0 })
+      .defaultTo(knex.fn.now(0));
+    table
+      .timestamp("updated_at", { useTz: true, precision: 0 })
+      .defaultTo(knex.fn.now(0));
   })
 
   .createTable("team_activities", function(table) {

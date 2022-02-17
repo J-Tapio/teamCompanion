@@ -1,4 +1,4 @@
-import venueSchemas from "../controllers/validationSchemas/venues.schema.js";
+/* import venueSchemas from "../controllers/validationSchemas/venues.schema.js";
 import validationHandlers from "../controllers/preValidation/preValidators.js";
 import preHandlers from "../controllers/preHandlers/preHandlers.js";
 import venueHandlers from "../controllers/venues.controller.js";
@@ -51,3 +51,4 @@ export default [
     },
   },
 ];
+ */

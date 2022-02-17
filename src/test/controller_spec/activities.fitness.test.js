@@ -235,6 +235,8 @@ describe("::: ACTIVITIES CONTROLLER TESTS - Fitness/Exercises :::", () => {
     });
 
     describe(":: With valid access token & priviledge ::", () => {
+
+
       describe(":: GET /activities/team/:teamId/activity/fitness ::", 
       () => {
       
@@ -245,7 +247,7 @@ describe("::: ACTIVITIES CONTROLLER TESTS - Fitness/Exercises :::", () => {
           expect(res.statusCode).to.eql(404);
         })
 
-        it("Should retrieve all assigned fitness activities of team", 
+        it("Should return all assigned fitness activities of team", 
         async () => {
 
           let res = await chai.requester
@@ -494,6 +496,7 @@ describe("::: ACTIVITIES CONTROLLER TESTS - Fitness/Exercises :::", () => {
           });
         });
 
+
       describe(
         ":: GET /activities/team/:teamId/activity/fitness/member/:userTeamId", () => {
 
@@ -648,6 +651,7 @@ describe("::: ACTIVITIES CONTROLLER TESTS - Fitness/Exercises :::", () => {
           }
         });
       });
+
 
       describe(
         ":: POST /activities/team/:teamId/activity/fitness/:activityId ::",
@@ -815,6 +819,8 @@ describe("::: ACTIVITIES CONTROLLER TESTS - Fitness/Exercises :::", () => {
                 ],
               })
               .set("Authorization", `Bearer ${trainerUserToken}`);
+
+              console.log(res.body);
               expect(res.statusCode).to.eql(200);
               expect(res.body.data[0]).to.have.all.keys(
                 "id",

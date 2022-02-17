@@ -10,6 +10,7 @@ services:
       POSTGRES_USER: postgres
       ADMINPWD: test_200321!
     command: ["postgres", "-c", "log_statement=all"]
+  
   teamcompanion_db:
     image: postgres:14.1-alpine
     restart: always

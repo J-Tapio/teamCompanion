@@ -30,7 +30,7 @@ const fastify = Fastify({
   logger: {
     prettyPrint: true,
     level: "error",
-  }
+  },
 });
 
 

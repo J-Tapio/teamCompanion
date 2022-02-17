@@ -2,6 +2,7 @@ import fastify from "../../../app.js";
 import Exercises from "../../../db/models/exercises.model.js";
 import Equipment from "../../../db/models/equipment.model.js";
 import Teams from "../../../db/models/teams.model.js";
+import Venues from "../../../db/models/venues.model.js";
 
 //! Valid but in some sense naming could be better.
 //TODO: Refactor later. Check also if one can fix the fastify.method issue within route handler.
@@ -27,11 +28,12 @@ function checkForUnknownUrlIds(request, reply) {
 }
 
 async function checkResourceCreator(request, reply) {
-  if (!request.user.roles.includes("admin")) {
+  if (request.user.roles.includes("user")) {
     const resourceModels = {
       exercises: Exercises,
       equipment: Equipment,
       teams: Teams,
+      venues: Venues,
     };
 
     const resourceModel = resourceModels[request.url.split("/")[1]];

@@ -52,29 +52,27 @@ const userById = {
 };
 
 const createUser = {
-  request: {
-    body: {
-      type: "object",
-      required: [
-        "firstName",
-        "lastName",
-        "dateOfBirth",
-        "streetAddress",
-        "city",
-        "state",
-        "zipCode",
-        "country",
-      ],
-      properties: {
-        firstName: { type: "string" },
-        lastName: { type: "string" },
-        dateOfBirth: { type: "string", format: "date" },
-        streetAddress: { type: "string" },
-        city: { type: "string" },
-        state: { type: "string" },
-        zipCode: { type: "integer" },
-        country: { type: "string" },
-      },
+  body: {
+    type: "object",
+    required: [
+      "firstName",
+      "lastName",
+      "dateOfBirth",
+      "streetAddress",
+      "city",
+      "state",
+      "zipCode",
+      "country",
+    ],
+    properties: {
+      firstName: { type: "string" },
+      lastName: { type: "string" },
+      dateOfBirth: { type: "string", format: "date" },
+      streetAddress: { type: "string" },
+      city: { type: "string" },
+      state: { type: "string" },
+      zipCode: { type: "string" },
+      country: { type: "string" },
     },
   },
   response: {
@@ -88,7 +86,7 @@ const createUser = {
         streetAddress: { type: "string" },
         city: { type: "string" },
         state: { type: "string" },
-        zipCode: { type: "integer" },
+        zipCode: { type: "string" },
         country: { type: "string" },
       },
     },
@@ -97,20 +95,18 @@ const createUser = {
 };
 
 const updateUser = {
-  request: {
-    body: {
-      type: "object",
-      properties: {
-        id: { type: "integer" },
-        firstName: { type: "string" },
-        lastName: { type: "string" },
-        dateOfBirth: { type: "string", format: "date" },
-        streetAddress: { type: "string" },
-        city: { type: "string" },
-        state: { type: "string" },
-        zipCode: { type: "string" },
-        country: { type: "string" },
-      },
+  body: {
+    type: "object",
+    properties: {
+      id: { type: "integer" },
+      firstName: { type: "string" },
+      lastName: { type: "string" },
+      dateOfBirth: { type: "string", format: "date" },
+      streetAddress: { type: "string" },
+      city: { type: "string" },
+      state: { type: "string" },
+      zipCode: { type: "string" },
+      country: { type: "string" },
     },
   },
   response: {
@@ -134,14 +130,12 @@ const updateUser = {
 };
 
 const updateCredentials = {
-  request: {
-    body: {
-      type: "object",
-      required: ["email"],
-      properties: {
-        email: { type: "string", format: "email" },
-        password: { type: "string" }
-      }
+  body: {
+    type: "object",
+    required: ["email"],
+    properties: {
+      email: { type: "string", format: "email" },
+      password: { type: "string" }
     }
   },
   response: {

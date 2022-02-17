@@ -1,12 +1,11 @@
-import User from "../../db/models/users.model.js";
+import errorHandler from "../tools/dbErrors.js";
 
 async function registerUser(request, reply) {
   try {
-    console.log(request.body);
-    //const newUser = await User.query().insert(request.body);
-    reply.send({message: "hello"})
+    // Email verification on user email
+    
   } catch (error) {
-    console.log(error);
+    errorHandler(error, reply);
   }
 }
 

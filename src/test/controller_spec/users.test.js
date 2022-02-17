@@ -7,7 +7,7 @@ const expect = chai.expect;
 
 // TODO: Add more expectations later. Figure out possible edge-cases.
 
-describe("/users controller tests", () => {
+describe("::: /users controller tests :::", () => {
   let adminUserToken;
   let coachUserToken;
   let athleteUserToken;
@@ -23,7 +23,7 @@ describe("/users controller tests", () => {
   });
 
 
-  describe("::With invalid/missing token or no admin priviledges::", () => {
+  describe("::: With invalid/missing token or no admin priviledges :::", () => {
     
     it("Should return status 400 without token in headers", async () => {
       const res = await chai.requester.get("/users");
@@ -42,7 +42,7 @@ describe("/users controller tests", () => {
     });
   });
 
-  describe("::With valid access token and Admin priviledges::", () => {
+  describe("::: With valid access token and Admin priviledges :::", () => {
 
     describe(":: GET /users ::", () => {
       it("Should return all users with information about users", async () => {

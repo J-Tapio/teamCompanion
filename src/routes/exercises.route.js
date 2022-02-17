@@ -36,7 +36,7 @@ export default [
     preHandler: checkTrainingAdminRole,
     handler: exerciseHandlers.allExEq,
     config: {
-      description: "Create new exercise & equipment",
+      description: "Retrieve existing equipment and exercises for new exercise & equipment connection",
     },
   },
   {
