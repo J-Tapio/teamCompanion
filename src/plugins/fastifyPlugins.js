@@ -1,7 +1,7 @@
-import UserTeams from "../../db/models/userTeams.model.js";
 import fastifyJwt from "fastify-jwt";
-import errorHandler from "../tools/dbErrors.js";
+import errorHandler from "../lib/errorHandler.js";
 import dotenv from "dotenv";
+import UserTeams from "../../db/models/userTeams.model.js";
 import TeamActivities from "../../db/models/teamActivities.model.js";
 import UserTeamActivities from "../../db/models/userTeamActivities.model.js";
 import _ from "lodash";
@@ -29,17 +29,24 @@ export async function authPlugin(fastify, options) {
 export async function checkStaffAdminRolePlugin(fastify, options) {
   fastify.decorate("checkStaffAdminRole", async function (request, reply) {
     try {
-      if (!request.user.roles.includes("admin")) {
-        const allowedRoles = await UserTeams.query().where(function (builder) {
-          builder
-            .where({
-              userId: request.user.id,
-              teamId: request.params.id,
-            })
-            .whereIn("teamRole", ["Coach", "Staff"]);
-        });
+      if(request.user.roles.includes("user")) {
+        let allowedTeamRoles = ["Coach", "Trainer", "Staff", "Physiotherapist"];
+        let userId = request.user.id;
+        let teamId = request.params.id || null;
 
-        if (allowedRoles.length === 0) {
+        if(teamId) {
+          await Teams.query().where("id", teamId).throwIfNotFound();
+        }
+
+        let teamMember = await UserTeams.query()
+          .where({
+            userId: userId,
+            ...(teamId && {teamId: teamId})
+          })
+          .select("teamRole")
+          .first();
+
+        if (!teamMember || !allowedTeamRoles.includes(teamMember.teamRole)) {
           reply.forbidden();
         }
       }
@@ -52,15 +59,18 @@ export async function checkStaffAdminRolePlugin(fastify, options) {
 export async function checkTrainingAdminRolePlugin(fastify, options) {
   fastify.decorate("checkTrainingAdminRole", async function (request, reply) {
     try {
-      if (!request.user.roles.includes("admin")) {
-        const allowedRoles = await UserTeams.query()
-          .where((builder) =>
-            builder
-              .where("userId", request.user.id)
-              .whereIn("teamRole", ["Coach", "Trainer"])
-          )
-          .select("teamRole");
-        if (allowedRoles.length === 0) {
+      if (request.user.roles.includes("user")) {
+        let allowedTeamRoles = ["Coach", "Trainer"];
+        let userId = request.user.id;
+
+        let teamMember = await UserTeams.query()
+          .select("teamRole")
+          .where({ userId })
+          .first();
+
+        console.log(teamMember);
+
+        if (!teamMember || !allowedTeamRoles.includes(teamMember.teamRole)) {
           reply.forbidden();
         }
       }
@@ -200,7 +210,6 @@ export async function checkActivitiesPriviledgePlugin(fastify, options) {
             reply.badRequest("Not possible to update assigned exercises before activity has started.")
           }
         }
-
 
         if (
           route ===

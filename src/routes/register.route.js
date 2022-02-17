@@ -1,28 +1,11 @@
 import registerUser from "../controllers/register.controller.js";
+import registerSchema from "../controllers/validationSchemas/register.schema.js";
 
-const registerValidation = {
-  body: {
-    type: "object",
-    required: ["email", "password"],
-    properties: {
-      email: { type: "string" },
-      password: { type: "string" }
-    }
-  },
-  response: {
-    200: {
-      type: "object",
-      properties: {
-        message: {type: "string"}
-      }
-    }
-  }
-}
 
 export default {
   method: "POST",
   url: "/register",
-  schema: registerValidation,
+  schema: registerSchema.registerUser,
   handler: registerUser,
   config: {
     description: "Register User"

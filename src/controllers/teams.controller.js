@@ -1,22 +1,13 @@
 import Teams from "../../db/models/teams.model.js";
 import UserTeams from "../../db/models/userTeams.model.js";
-import errorHandler from "../tools/dbErrors.js";
-import dbResultHandler from "./dbResultHandlers/teams.js";
+import Venues from "../../db/models/venues.model.js";
+import errorHandler from "../lib/errorHandler.js";
+import dbResultHandler from "./dbResultFormatters/teams.resultformatter.js";
+import TeamsQueries from "../controllers/dbQueries/teams.queries.js";
 
 async function getAllTeams(request, reply) {
   try {
-    const data = await Teams.query()
-      .select(
-        "id", 
-        "teamName",
-        "streetAddress",
-        "city",
-        "zipCode",
-        "state",
-        "country"
-        )
-      .orderBy("id", "asc")
-      .throwIfNotFound();
+    let data = await TeamsQueries.allTeams();
     reply.send({count: data.length, data});
   } catch (error) {
     errorHandler(error, reply);
@@ -25,41 +16,15 @@ async function getAllTeams(request, reply) {
 
 async function createTeam(request, reply) {
   try {
-
-    const {teamRole, ...teamProperties } = request.body;
-    const {
-      id, 
-      teamName, 
-      streetAddress, 
-      city, 
-      state, 
-      zipCode, 
-      country,
-      createdAt
-    } = await Teams.query()
-    .insert({...teamProperties, createdBy: request.user.id})
-    .returning("*");
-
-    // Create resource within join-table between team and creator of the team
-    await UserTeams.query()
-    .insert({
-      userId: request.user.id,
-      teamId: id,
-      teamRole: teamRole,
-      status: "Active",
-    })
-
-    reply.status(201)
-    .send({ 
-      id, 
-      teamName, 
-      streetAddress, 
-      city, 
-      state, 
-      zipCode, 
-      country, 
-      createdAt 
+    let {teamRole, ...teamInformation} = request.body;
+    let userId = request.user.id;
+    let newTeam = await TeamsQueries.createTeam({
+      userId,
+      teamInformation,
+      teamRole
     });
+
+    reply.status(201).send(newTeam);
   } catch (error) {
     errorHandler(error, reply);
   }
@@ -67,19 +32,11 @@ async function createTeam(request, reply) {
 
 async function usersTeams(request, reply) {
   try {
-    const teams = await Teams.query()
-      .joinRelated("userTeams")
-      .select(
-        "user_teams_join.id as userTeamId",
-        "teams.id as teamId",
-        "teams.teamName",
-        "teamRole"
-      )
-      .where("user_teams_join.userId", request.user.id)
-      .orderBy("teamId", "asc")
-      .throwIfNotFound();
-      
-    reply.send({teams})
+    let teams = await TeamsQueries.userTeams({
+      userId: request.user.id
+    });
+
+    reply.send({teams});
   } catch (error) {
     errorHandler(error, reply);
   }
@@ -87,28 +44,10 @@ async function usersTeams(request, reply) {
 
 async function teamById(request, reply) {
   try {
-    const team = await Teams.query()
-      .joinRelated("userTeams")
-      .join("userInformation", "user_teams_join.userId", "=", "userInformation.userId")
-      .where("teams.id", request.params.id)
-      .select(
-        "teams.id as teamId",
-        "teams.teamName",
-        "teams.streetAddress",
-        "teams.zipCode",
-        "teams.city",
-        "teams.state",
-        "teams.country",
-        "user_teams_join.userId as userId",
-        "userInformation.firstName",
-        "userInformation.lastName",
-        "user_teams_join.teamRole",
-        "user_teams_join.status",
-      )
-      .orderBy("userId", "asc")
-      .throwIfNotFound();
-
-    reply.send(dbResultHandler.teamInformation(team));
+    let team = await TeamsQueries.teamById({
+      teamId: parseInt(request.params.id)
+    });
+    reply.send(team);
   } catch (error) {
     errorHandler(error, reply);
   }
@@ -116,23 +55,12 @@ async function teamById(request, reply) {
 
 async function updateTeam(request, reply) {
   try {
-    const updatedTeam = await Teams.query()
-      .where("id", request.params.id)
-      .patch(request.body)
-      .returning(
-        "id",
-        "teamName", 
-        "streetAddress",
-        "city", 
-        "state", 
-        "zipCode", 
-        "country",
-        "updatedAt"
-      )
-      .first()
-      .throwIfNotFound();
+    let updatedTeam = await TeamsQueries.updateTeam({
+      id: parseInt(request.params.id),
+      updateInformation: request.body,
+    });
 
-      reply.send(updatedTeam);
+    reply.send(updatedTeam);
   } catch (error) {
     errorHandler(error, reply);
   }
@@ -140,7 +68,61 @@ async function updateTeam(request, reply) {
 
 async function deleteTeam(request, reply) {
   try {
-    await Teams.query().deleteById(request.params.id).throwIfNotFound();
+    await TeamsQueries.deleteTeam({
+      id: parseInt(request.params.id)
+    });
+    reply.status(204);
+  } catch (error) {
+    errorHandler(error, reply);
+  }
+}
+
+async function allTeamVenues(request, reply) {
+  try {
+    let data = await TeamsQueries.allTeamVenues({
+      teamId: parseInt(request.params.id)
+    });
+    reply.send({ count: data.length, data });
+  } catch (error) {
+    errorHandler(error, reply);
+  }
+}
+
+async function createTeamVenue(request, reply) {
+  try {
+    let newTeamVenue = await TeamsQueries.createTeamVenue({
+      teamId: parseInt(request.params.id),
+      teamInformation: request.body,
+    });
+
+    reply.status(201).send(newTeamVenue);
+  } catch (error) {
+    errorHandler(error, reply);
+  }
+}
+
+async function updateTeamVenue(request, reply) {
+  try {
+    let updatedTeamVenue = await TeamsQueries.updateTeamVenue({
+      id: parseInt(request.params.venueId),
+      teamId: parseInt(request.params.id),
+      updateInformation: request.body
+    });
+
+    reply.send(updatedTeamVenue);
+  } catch (error) {
+    console.log(error);
+    errorHandler(error, reply);
+  }
+}
+
+async function deleteTeamVenue(request, reply) {
+  try {
+    await TeamsQueries.deleteTeamVenue({
+      id: parseInt(request.params.venueId), 
+      teamId: parseInt(request.params.id)
+    });
+    
     reply.status(204);
   } catch (error) {
     errorHandler(error, reply);
@@ -153,5 +135,9 @@ export default {
   teamById,
   updateTeam,
   deleteTeam,
-  usersTeams
-}
+  usersTeams,
+  allTeamVenues,
+  createTeamVenue,
+  updateTeamVenue,
+  deleteTeamVenue,
+};

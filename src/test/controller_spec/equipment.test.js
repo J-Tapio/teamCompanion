@@ -62,12 +62,20 @@ describe("::: EQUIPMENT CONTROLLER TESTS :::", () => {
           .set("authorization", `Bearer ${athleteUserToken}`);
         const res3 = await chai.requester
           .post("/equipment")
+          .send({
+            equipmentName: "Resistance Band",
+            trainingModality: "Strength",
+          })
           .set("authorization", `Bearer ${athleteUserToken}`)
           .send({
             exerciseName: "Invalid",
           });
         const res4 = await chai.requester
           .put("/equipment/2")
+          .send({
+            equipmentName: "Resistance Band",
+            trainingModality: "Strength",
+          })
           .set("authorization", `Bearer ${athleteUserToken}`)
           .send({ exerciseName: "Should not go through." });
         const res5 = await chai.requester
@@ -192,6 +200,8 @@ describe("::: EQUIPMENT CONTROLLER TESTS :::", () => {
           trainingModality: "Strength",
         })
         .set("authorization", `Bearer ${trainerUserToken}`);
+
+      console.log(res.body);
 
       expect(res.statusCode).to.eql(201);
       expect(res.body).to.have.all.keys("id", "equipmentName", "trainingModality", "equipmentInfo", "createdAt");

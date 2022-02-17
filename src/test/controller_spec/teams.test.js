@@ -1,5 +1,6 @@
 import Teams from "../../../db/models/teams.model.js";
 import UserTeams from "../../../db/models/userTeams.model.js";
+import helperObject from "../helper_data/teams.helperdata.js";
 import testHelpers from "../_test_helpers.js";
 const chai = testHelpers.getChai();
 const { insertData } = testHelpers;
@@ -307,8 +308,6 @@ describe("::: TEAMS CONTROLLER TESTS :::", () => {
           .get("/teams/me")
           .set("authorization", `Bearer ${physioUserToken}`);
 
-        console.log(res2.body);
-
         expect(res2.statusCode).to.eql(200);
         expect(res2.body).to.haveOwnProperty("teams");
         expect(res2.body.teams).to.be.ofSize(2);
@@ -473,22 +472,18 @@ describe("::: TEAMS CONTROLLER TESTS :::", () => {
 
       it("Should return status 204 when team deleted successfully", 
       async () => {
-        const res1 = await chai.requester
-          .delete("/teams/1")
-          .set("authorization", `Bearer ${adminUserToken}`);
-
         //TODO: Refactor later if team should be allowed to be deleted also by the coach if was created by staff member of team? I think resource(team) creator should be the only one besides admin to delete the resource.
 
-        const res2 = await chai.requester
+        const res = await chai.requester
           .delete("/teams/3")
           .set("authorization", `Bearer ${staffUserToken}`);
 
-        expect(res1.statusCode).to.eql(204);
-        expect(res2.statusCode).to.eql(204);
+        
+        expect(res.statusCode).to.eql(204);
       });
     });
 
-    describe("::: GET /teams - EMPTY DATABASE :::", () => {
+  /*   describe("::: GET /teams - EMPTY DATABASE :::", () => {
       it("Should return status 404 when database is empty", async() => {
         await Teams.query().del();
   
@@ -497,7 +492,189 @@ describe("::: TEAMS CONTROLLER TESTS :::", () => {
           .set("authorization", `Bearer ${adminUserToken}`);
         expect(res.statusCode).to.eql(404);
       })
-    })
+    }) */
   });
+
+  describe(":: /GET /teams/:id/venues ::", () => {
+    it("Should return 404 when unknown teamId", async() => {
+      let res = await chai.requester
+        .get("/teams/100/venues")
+        .set("authorization", `Bearer ${staffUserToken}`);
+      expect(res.statusCode).to.eql(404);
+    })
+    it("Should return created venues by team", async() => {
+      let res = await chai.requester
+        .get("/teams/1/venues")
+        .set("authorization", `Bearer ${staffUserToken}`);
+
+      expect(res.statusCode).to.eql(200);
+      expect(res.body).to.have.keys("count", "data");
+      res.body.data.forEach((venue, index) => {
+        expect(venue).to.include(helperObject.allVenues[index])
+      });
+    })
+  })
+
+  describe(":: /POST /teams/:id/venues ::", () => {
+    it("Should return 404 when teamId unknown", async() => {
+      let res = await chai.requester
+        .post("/teams/100/venues")
+        .send({
+          venueName: "new venue",
+          streetAddress: "NewVenue Street 10C",
+          zipCode: "12345",
+          city: "Murcia",
+          state: "Murcia",
+          country: "Spain",
+        })
+        .set("authorization", `Bearer ${staffUserToken}`);
+
+      expect(res.statusCode).to.eql(404);
+    });
+
+    it("Should return 400 when invalid data provided", async() => {
+      let res1 = await chai.requester
+        .post("/teams/1/venues")
+        .send({
+          venueName: "new venue",
+          streetAddress: "NewVenue Street 10C",
+          zipCode: 12345, // Should be string
+          city: "Murcia",
+          country: "Spain",
+        })
+        .set("authorization", `Bearer ${staffUserToken}`);
+
+      let res2 = await chai.requester
+        .post("/teams/1/venues")
+        .send({
+          venueName: "new venue",
+          streetAddress: "NewVenue Street 10C",
+          zipCode: "12345",
+          city: "Murcia",
+          //country: "Spain", missing required property
+        })
+        .set("authorization", `Bearer ${staffUserToken}`);
+
+        expect(res1.statusCode).to.eql(400);
+        expect(res2.statusCode).to.eql(400);
+    });
+
+    it("Should return created team venue", async() => {
+      let newVenue = {
+        venueName: "New Venue",
+        streetAddress: "NewVenue Street 10C",
+        zipCode: "12345",
+        city: "Murcia",
+        state: "Murcia",
+        country: "Spain",
+      };
+
+      let res = await chai.requester
+        .post("/teams/1/venues")
+        .send(newVenue)
+        .set("authorization", `Bearer ${staffUserToken}`);
+
+      expect(res.statusCode).to.eql(201);
+      expect(res.body).to.have.all.keys(
+        "id",
+        "venueName",
+        "streetAddress",
+        "zipCode",
+        "city",
+        "country",
+        "state",
+        "teamId",
+        "createdAt"
+      )
+      expect(res.body.id).to.eql(5);
+      expect(res.body.teamId).to.eql(1);
+      expect(res.body).to.include(newVenue);
+    });
+  })
+
+  describe(":: /PUT /teams/:id/venues/venue/:venueId ::", () => {
+    it("Should return 404 when teamId unknown", async() => {
+      let res = await chai.requester
+        .put("/teams/100/venues/venue/1")
+        .send({venueName: "Invalid"})
+        .set("authorization", `Bearer ${staffUserToken}`);
+      expect(res.statusCode).to.eql(404);
+    });
+
+    it("Should return 404 when venueId unknown", async() => {
+      let res = await chai.requester
+        .put("/teams/1/venues/venue/100")
+        .send({ venueName: "Invalid Stadium" })
+        .set("authorization", `Bearer ${staffUserToken}`);
+      expect(res.statusCode).to.eql(404);
+    });
+
+    it("Should return 400 when invalid data provided", async() => {
+      let res1 = await chai.requester
+        .put("/teams/1/venues/venue/1")
+        .send({ invalidProperty: "Should not pass" })
+        .set("authorization", `Bearer ${staffUserToken}`);
+      let res2 = await chai.requester
+        .put("/teams/1/venues/venue/1")
+        .send({ 
+          venueName: "Murcia Stadion",
+          city: 12345 // Should be string value
+        })
+        .set("authorization", `Bearer ${staffUserToken}`);
+      expect(res1.statusCode).to.eql(400);
+      expect(res2.statusCode).to.eql(400);
+    });
+
+    it("Should return updated team venue", async() => {
+      let res = await chai.requester
+        .put("/teams/1/venues/venue/1")
+        .send({ 
+          venueName: "Alicante Stadion",
+          state: "Alicante"
+        })
+        .set("authorization", `Bearer ${staffUserToken}`);
+      expect(res.statusCode).to.eql(200);
+      expect(res.body).to.have.all.keys(
+        "id",
+        "venueName",
+        "streetAddress",
+        "zipCode",
+        "city",
+        "state",
+        "country",
+        "teamId",
+        "updatedAt"
+      );
+      expect(res.body.id).to.eql(1);
+      expect(res.body.teamId).to.eql(1);
+      expect(res.body.venueName).to.eql("Alicante Stadion");
+      expect(res.body.state).to.eql("Alicante");
+      expect(res.body.city).to.eql("Murcia");
+    });
+  })
+
+  describe(":: DELETE /teams/:id/venues/venue/:venueId ::", () => {
+
+    it("Should return 404 when unknown teamId", async() => {
+      let res = await chai.requester
+        .delete("/teams/100/venues/venue/1")
+        .set("authorization", `Bearer ${staffUserToken}`);
+      expect(res.statusCode).to.eql(404);
+    });
+
+    it("Should return 404 when venueId unknown", async() => {
+      let res = await chai.requester
+        .delete("/teams/1/venues/venue/100")
+        .set("authorization", `Bearer ${staffUserToken}`);
+      expect(res.statusCode).to.eql(404);
+    });
+
+    it("Should delete venue by id", async() => {
+      let res = await chai.requester
+        .delete("/teams/1/venues/venue/5")
+        .set("authorization", `Bearer ${staffUserToken}`);
+      expect(res.statusCode).to.eql(204);
+    });
+  })
 
 });

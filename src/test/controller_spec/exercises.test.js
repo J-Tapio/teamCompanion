@@ -58,7 +58,7 @@ describe("::: EXERCISES CONTROLLER TESTS :::", () => {
           .get("/exercises")
           .set("authorization", `Bearer ${athleteUserToken}`);
         const res2 = await chai.requester
-          .get("/exercises/4")
+          .get("/exercises/5")
           .set("authorization", `Bearer ${athleteUserToken}`);
         const res3 = await chai.requester
           .post("/exercises")
@@ -140,13 +140,13 @@ describe("::: EXERCISES CONTROLLER TESTS :::", () => {
     describe(":: GET - /exercises/:id", () => {
       it("Should return status 404 when unknown exercise id", async () => {
         const res = await chai.requester
-          .get("/exercises/10")
+          .get("/exercises/100")
           .set("authorization", `Bearer ${coachUserToken}`);
         expect(res.statusCode).to.eql(404);
       });
 
       //! Does contain only one equipment within array of equipment property.
-      it("Should return exercise by known exercise id", async () => {
+      it("Should return exercise by exercise id", async () => {
         const res1 = await chai.requester
           .get("/exercises/2")
           .set("authorization", `Bearer ${adminUserToken}`);
@@ -256,10 +256,10 @@ describe("::: EXERCISES CONTROLLER TESTS :::", () => {
         //! Exercise 1.
         const res1 = await chai.requester
           .post("/exercises")
-          .set("authorization", `Bearer ${adminUserToken}`)
+          .set("authorization", `Bearer ${trainerUserToken}`)
           .send({
-            exerciseName: "AdminEx",
-            exerciseInfo: "Admin notes.",
+            exerciseName: "TrainerEx",
+            exerciseInfo: "Trainer notes.",
           });
 
         expect(res1.statusCode).to.eql(201);
@@ -271,10 +271,10 @@ describe("::: EXERCISES CONTROLLER TESTS :::", () => {
         );
 
         expect(res1.body.id).to.eql(7);
-        expect(res1.body.exerciseName).to.eql("AdminEx");
-        expect(res1.body.exerciseInfo).to.eql("Admin notes.");
+        expect(res1.body.exerciseName).to.eql("TrainerEx");
+        expect(res1.body.exerciseInfo).to.eql("Trainer notes.");
         const dbResult1 = await Exercises.query().select("createdBy").where("id", 7).first();
-        expect(dbResult1.createdBy).to.eql(1);
+        expect(dbResult1.createdBy).to.eql(4);
 
 
         //! Exercise 2.
@@ -307,19 +307,19 @@ describe("::: EXERCISES CONTROLLER TESTS :::", () => {
       //TODO: COME BACK HERE LATER
       it("Should return status 403 when exercise creator or admin is not making the request", async () => {
         const res1 = await chai.requester
-          .put("/exercises/2")
+          .put("/exercises/1")
           .send({ exerciseName: "Not going to happen" })
           .set("authorization", `Bearer ${athleteUserToken}`);
         expect(res1.statusCode).to.eql(403);
 
         const res2 = await chai.requester
-          .put("/exercises/5")
+          .put("/exercises/1")
           .send({ exerciseName: "Not going to happen" })
           .set("authorization", `Bearer ${trainerUserToken}`);
         expect(res2.statusCode).to.eql(403);
 
         const res3 = await chai.requester
-          .put("/exercises/5")
+          .put("/exercises/1")
           .send({ exerciseName: "Not going to happen" })
           .set("authorization", `Bearer ${coachUserToken}`);
         expect(res2.statusCode).to.eql(403);
@@ -338,13 +338,13 @@ describe("::: EXERCISES CONTROLLER TESTS :::", () => {
 
       it("Should return status 200 / updated exercise when updated by exercise creator", async () => {
         const res = await chai.requester
-          .put("/exercises/2")
+          .put("/exercises/7")
           .set("authorization", `Bearer ${trainerUserToken}`)
           .send({ exerciseName: "ModifiedByCreator" });
 
         expect(res.statusCode).to.eql(200);
         expect(res.body.exerciseName).to.eql("ModifiedByCreator");
-        expect(res.body.exerciseInfo).to.eql("Rope Swing is great.");
+        expect(res.body.exerciseInfo).to.eql("Trainer notes.");
       });
 
       it("Should return status 200 / updated exercise updated by admin", async () => {
@@ -512,6 +512,7 @@ describe("::: EXERCISES CONTROLLER TESTS :::", () => {
           })
           .set("authorization", `Bearer ${coachUserToken}`);
 
+          console.log(res.body);
 
         expect(res.statusCode).to.eql(201);
         expect(res.body.exerciseId).to.eql(7);
