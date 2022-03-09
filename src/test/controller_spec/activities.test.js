@@ -16,7 +16,7 @@ describe("::: ACTIVITIES CONTROLLER TESTS :::", () => {
     let coachUserToken;
     let trainerUserToken;
     let athleteUserToken;
-    let staffUserToken
+    let staffUserToken;
 
     before(async () => {
       await insertData();

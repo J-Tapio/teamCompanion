@@ -52,7 +52,7 @@ async function updateCredentials(request, reply) {
     let {id} = request.user;
 
     if(email && password) {
-      const hashPassword = await fastify.bcrypt.hash(password)
+      const hashPassword = await fastify.bcrypt.hash(password);
       var {email} = await UsersQueries.updateCredentials({
         id, email, hashPassword
       });

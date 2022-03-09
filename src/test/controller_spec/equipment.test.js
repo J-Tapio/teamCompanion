@@ -201,8 +201,6 @@ describe("::: EQUIPMENT CONTROLLER TESTS :::", () => {
         })
         .set("authorization", `Bearer ${trainerUserToken}`);
 
-      console.log(res.body);
-
       expect(res.statusCode).to.eql(201);
       expect(res.body).to.have.all.keys("id", "equipmentName", "trainingModality", "equipmentInfo", "createdAt");
       expect(res.body.id).to.eql(7);

@@ -1,4 +1,3 @@
-
 export function adminCheck(request, reply, done) {
   try {
     request.user.roles.includes("admin") && done();

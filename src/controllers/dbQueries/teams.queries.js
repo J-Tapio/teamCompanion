@@ -2,8 +2,12 @@ import Teams from "../../../db/models/teams.model.js";
 import Venues from "../../../db/models/venues.model.js";
 import UserTeams from "../../../db/models/userTeams.model.js";
 import TeamsQueryFormatter from "../dbResultFormatters/teams.resultformatter.js";
+import TeamMembers from "../../../db/models/teamMembers.model.js";
+import Users from "../../../db/models/users.model.js";
+import AppError from "../../lib/appError.js";
 
-export default class TeamsQueries extends TeamsQueryFormatter {
+export default class TeamsQueries {
+  
   static async allTeams() {
     return await Teams.query()
       .select(
@@ -18,6 +22,7 @@ export default class TeamsQueries extends TeamsQueryFormatter {
       .orderBy("id", "asc")
       .throwIfNotFound();
   }
+
 
   static async createTeam({userId, teamInformation, teamRole}) {
     // Create team
@@ -36,6 +41,15 @@ export default class TeamsQueries extends TeamsQueryFormatter {
     return {id, ...newTeam};
   }
 
+  
+  static async updateTeamLogo({teamLogo, teamId}) {
+    await Teams.query()
+      .patch({teamLogo})
+      .where("id", teamId)
+      .throwIfNotFound();
+  }
+
+
   static async userTeams({userId}) {
     return await Teams.query()
       .joinRelated("userTeams")
@@ -49,6 +63,7 @@ export default class TeamsQueries extends TeamsQueryFormatter {
       .orderBy("teamId", "asc")
       .throwIfNotFound();
   }
+
 
   static async teamById({teamId}) {
     let dbResult = await Teams.query()
@@ -77,8 +92,9 @@ export default class TeamsQueries extends TeamsQueryFormatter {
       .orderBy("userId", "asc")
       .throwIfNotFound();
 
-    return this.formattedTeamInformation(dbResult);
+    return TeamsQueryFormatter.formattedTeamInformation(dbResult);
   }
+
 
   static async updateTeam({id, updateInformation}) {
     return await Teams.query()
@@ -87,13 +103,85 @@ export default class TeamsQueries extends TeamsQueryFormatter {
       .throwIfNotFound();
   }
 
+
   static async deleteTeam({id}) {
     await Teams.query().deleteById(id).throwIfNotFound();
   }
 
+
+  static async pendingTeamMemberActivations({teamId}) {
+    // Get team-member emails from TeamMembers table related to team
+    // Get emails from users table
+    // Compare the emails
+    // - If not within users table - user has not registered yet
+    // - If within table, registered but might need email verification
+
+    let emailsForCheck = await TeamMembers.query()
+    .select("email")
+    .where({teamId});
+
+    let usersTableEmails = await Users.query()
+    .select("email", "emailStatus");
+
+    let pendingActivations = emailsForCheck.filter((teamMemberEmail, index) => {
+      if(
+        !usersTableEmails.includes(teamMemberEmail) || 
+        (
+          usersTableEmails.includes(teamMemberEmail) &&
+          usersTableEmails[index].emailStatus === "pending"
+        )
+      ) {
+        return teamMemberEmail;
+      }
+    })
+
+    console.log(pendingActivations);
+
+    return {count: pendingActivations.length, data: pendingActivations};
+  }
+
+
+  static async addTeamMembers({data, teamId}) {
+    // Map to data objects teamId before DB query for insertion
+    let teamMembersInformation = data.map((memberInfo) => {
+      memberInfo.teamId = teamId
+      return memberInfo;
+    });
+
+    let trx = await TeamMembers.startTransaction();
+    let createdTeamMembers;
+    try {
+      createdTeamMembers = await TeamMembers.query().insert(teamMembersInformation);
+      await trx.commit();
+    } catch (error) {
+      await trx.rollback();
+      throw new AppError("DB Transaction failed");
+    }
+
+    return {data: createdTeamMembers}
+  }
+
+
+  static async updateTeamMember({linkedMemberId, updateInformation}) {
+    let updatedMemberTeamInfo = await TeamMembers.query()
+      .patchAndFetchById(linkedMemberId, updateInformation)
+      .throwIfNotFound();
+      
+    return {data: updatedMemberTeamInfo}
+  }
+
+
+  static async deleteTeamMember({linkedMemberId}) {
+    await TeamMembers.query()
+    .deleteById(linkedMemberId)
+    .throwIfNotFound();
+  }
+
+
   static async allTeamVenues({teamId}) {
     return await Venues.query().where("teamId", teamId);
   }
+
 
   static async createTeamVenue({teamId, teamInformation}) {
     let { updatedAt, ...newTeamVenue } = await Venues.query()
@@ -101,6 +189,7 @@ export default class TeamsQueries extends TeamsQueryFormatter {
       .returning("*");
     return newTeamVenue;
   }
+
 
   static async updateTeamVenue({id, teamId, updateInformation}) {
     return await Venues.query()
@@ -123,6 +212,7 @@ export default class TeamsQueries extends TeamsQueryFormatter {
       .first()
       .throwIfNotFound();
   }
+
 
   static async deleteTeamVenue({id, teamId}) {
     console.log(id, teamId)

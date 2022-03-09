@@ -6,8 +6,8 @@ export function up(knex) {
   .createTable("users", function(table) {
     table.increments("id").primary();
     table.string("email", 100).unique().notNullable();
+    table.enu("emailStatus", ["pending", "active"]).defaultTo("pending");
     table.string("password", 100).notNullable();
-    table.boolean("emailVerified", 100).defaultTo(false);
     table.enu("role", ["admin", "user"]).defaultTo("user");
     table.integer("createdBy").nullable();
     table.string("refresh_token").nullable();
@@ -22,6 +22,7 @@ export function up(knex) {
   .createTable("teams", function(table) {
     table.increments("id").primary();
     table.string("team_name", 100).unique();
+    table.string("team_logo", 255);
     table.string("street_address", 255);
     table.string("city", 100);
     table.string("zip_code", 100);
@@ -33,6 +34,31 @@ export function up(knex) {
       .inTable("users")
       .onUpdate("CASCADE")
       .onDelete("SET NULL");
+    table
+      .timestamp("created_at", { useTz: true, precision: 0 })
+      .defaultTo(knex.fn.now(0));
+    table
+      .timestamp("updated_at", { useTz: true, precision: 0 })
+      .defaultTo(knex.fn.now(0));
+  })
+
+  .createTable("team_members", function(table) {
+    table.increments("id").primary();
+    table.string("email").notNullable();
+    table.integer("team_id").notNullable();
+    table.foreign("team_id")
+    .references("id")
+    .inTable("teams")
+    .onUpdate("CASCADE")
+    .onDelete("CASCADE")
+    table.enu("team_role", [
+      "Coach",
+      "Physiotherapist",
+      "Trainer",
+      "Athlete",
+      "Staff",
+    ]).notNullable();
+    table.unique(["email", "team_id"]);
     table
       .timestamp("created_at", { useTz: true, precision: 0 })
       .defaultTo(knex.fn.now(0));
@@ -326,6 +352,7 @@ export function down(knex) {
   .dropTableIfExists("equipment")
   .dropTableIfExists("user_information")
   .dropTableIfExists("venues")
+  .dropTableIfExists("team_members")
   .dropTableIfExists("teams")
   .dropTableIfExists("users")
 };

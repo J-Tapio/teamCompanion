@@ -1,6 +1,6 @@
 export default class EquipmentQueryFormatter {
 
-  static formattedAllEquipment(dbRows) {
+  static allEquipment(dbRows) {
     const data = dbRows.reduce((acc, currentVal) => {
       if (acc.length > 0 && acc[acc.length - 1][0].id === currentVal.id) {
         acc[acc.length - 1].push(currentVal);
@@ -30,7 +30,7 @@ export default class EquipmentQueryFormatter {
     return { count: data.length, data }
   }
   
-  static formattedEquipmentById(dbRows) {
+  static equipmentById(dbRows) {
     if(dbRows.length > 1) {
       return {
         id: dbRows[0].id,
@@ -68,8 +68,3 @@ export default class EquipmentQueryFormatter {
     }
   }
 }
-
-
-/* export default {
-  allEq, byIdEq
-} */

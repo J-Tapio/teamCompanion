@@ -16,6 +16,7 @@ async function addNewAthlete() {
     usersTable: {
       email: "athlete2@mail.com",
       password: "$2a$14$AEKqIPCcQRYWuK9WneDW7eROZ.Erm35c65TnSiC.Z8Ta2CBabImXi",
+      emailStatus: "active"
     },
     userInformation: {
       firstName: "Athlete2",
@@ -100,7 +101,7 @@ describe("::: ACTIVITIES CONTROLLER TESTS - Fitness/Exercises :::", () => {
         .toISOString()
         .slice(0, -7);
 
-      let res = await TeamActivities.query()
+      await TeamActivities.query()
         .patch({ activityStart, activityEnd })
         .whereIn("id", [2, 3])
         .returning("*");
@@ -351,8 +352,7 @@ describe("::: ACTIVITIES CONTROLLER TESTS - Fitness/Exercises :::", () => {
       });
 
 
-      describe(
-      ":: GET /activities/team/:teamId/activity/fitness/:activityId ::", 
+      describe(":: GET /activities/team/:teamId/activity/fitness/:activityId ::", 
       () => {
         it("Should return status 404 when unknown teamId or activityId",
         async() => {
@@ -820,7 +820,6 @@ describe("::: ACTIVITIES CONTROLLER TESTS - Fitness/Exercises :::", () => {
               })
               .set("Authorization", `Bearer ${trainerUserToken}`);
 
-              console.log(res.body);
               expect(res.statusCode).to.eql(200);
               expect(res.body.data[0]).to.have.all.keys(
                 "id",

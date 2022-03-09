@@ -31,6 +31,7 @@ class Teams extends Model {
       properties: {
         id: { type: "integer" },
         teamName: { type: "string", minLength: 1, maxLength: 100 },
+        teamLogo: { type: "string" },
         streetAddress: { type: "string", minLength: 1, maxLength: 255 },
         city: { type: "string", minLength: 1, maxLength: 100 },
         state: { type: "string", minLength: 1, maxLength: 100 },

@@ -1,12 +1,6 @@
 import fastify from "../../app.js";
 
-/**
- * WILL BE USEFUL ONLY LATER WHEN CODING ROUTE FOR REGISTER/LOGIN
- * USING BCRYPTJS SEPARATELY TO GENERATE THE HASH FOR TEST USERS
- * FASTIFY BCRYPT USES BCRYPTJS...
- */
-
-export async function generateHash(password) {
+export async function generatePasswordHash(password) {
   try {
     const hashedPassword = await fastify.bcrypt.hash(password);
     return hashedPassword;

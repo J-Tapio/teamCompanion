@@ -1,4 +1,5 @@
-import dotenv from "dotenv";
+// Imports =====================================================================
+import 'dotenv/config';
 import Knex from "knex";
 import { Model } from "objection";
 import Fastify from "fastify";
@@ -7,6 +8,7 @@ import fastifySwagger from "fastify-swagger";
 import fastifyPrintRoutes from "fastify-print-routes";
 import fastifyBcrypt from "fastify-bcrypt";
 import fastifySensible from "fastify-sensible";
+import fastifyMultipart from "fastify-multipart";
 import fp from "fastify-plugin";
 import knexConfiguration from "./knexfile.js";
 import {
@@ -19,13 +21,12 @@ import {
 import appRoutes from "./src/routes/index.js";
 import { adminCheck } from "./src/decorators/fastifyDecorators.js";
 
-dotenv.config({ path: "./.env" });
 
-// Initialize Knex / Objection
+// Initialize Knex / Objection =================================================
 export const db = Knex(knexConfiguration.development);
 Model.knex(db);
 
-
+// Initialize Fastify & register plugins, routes etc. ==========================
 const fastify = Fastify({
   logger: {
     prettyPrint: true,
@@ -50,6 +51,7 @@ fastify.register(fastifySwagger, {
 });
 fastify.register(fastifySensible);
 fastify.register(fastifyBcrypt, { saltWorkFactor: 14 });
+fastify.register(fastifyMultipart);
 fastify.register(fp(authPlugin));
 fastify.register(fp(checkStaffAdminRolePlugin));
 fastify.register(fp(checkTrainingAdminRolePlugin));
@@ -57,6 +59,7 @@ fastify.register(fp(checkActivitiesPriviledgePlugin));
 fastify.register(fp(checkForUnknownUrlIdsPlugin));
 fastify.decorate("checkAdminRole", adminCheck);
 
+// Register routes
 appRoutes.forEach((endpoint) => {
   fastify.route(endpoint);
 });

@@ -1,7 +1,7 @@
 import Equipment from "../../../db/models/equipment.model.js";
 import EquipmentQueryFormatter from "../dbResultFormatters/equipment.resultformatter.js";
 
-export default class EquipmentQueries extends EquipmentQueryFormatter {
+export default class EquipmentQueries {
   static async allEquipment() {
     let dbResult = await Equipment.query()
       .joinRelated({ exercises: true })
@@ -21,7 +21,7 @@ export default class EquipmentQueries extends EquipmentQueryFormatter {
       .orderBy("equipmentId", "asc")
       .throwIfNotFound();
     
-    return this.formattedAllEquipment(dbResult);
+    return EquipmentQueryFormatter.allEquipment(dbResult);
   }
 
   static async equipmentById({equipmentId}) {
@@ -43,7 +43,7 @@ export default class EquipmentQueries extends EquipmentQueryFormatter {
       .where("equipment.id", equipmentId)
       .throwIfNotFound();
     
-    return this.formattedEquipmentById(dbResult);
+    return EquipmentQueryFormatter.equipmentById(dbResult);
   }
 
   static async createEquipment({userId, equipmentInformation}) {

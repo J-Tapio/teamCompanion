@@ -27,15 +27,41 @@ const examplePwd6 =
 
 
 export default [
-    {
-      id: 1,
-      email: "admin@mail.com",
-      password: examplePwd1,
-      role: "admin",
-    },
-    { id: 2, email: "coach@mail.com", password: examplePwd2 },
-    { id: 3, email: "physio@mail.com", password: examplePwd3 },
-    { id: 4, email: "trainer@mail.com", password: examplePwd4 },
-    { id: 5, email: "athlete@mail.com", password: examplePwd5 },
-    { id: 6, email: "staff@mail.com", password: examplePwd6 },
+  {
+    id: 1,
+    email: "admin@mail.com",
+    password: examplePwd1,
+    role: "admin",
+    emailStatus: "active"
+  },
+  {
+    id: 2,
+    email: "coach@mail.com",
+    password: examplePwd2,
+    emailStatus: "active",
+  },
+  {
+    id: 3,
+    email: "physio@mail.com",
+    password: examplePwd3,
+    emailStatus: "active",
+  },
+  {
+    id: 4,
+    email: "trainer@mail.com",
+    password: examplePwd4,
+    emailStatus: "active",
+  },
+  {
+    id: 5,
+    email: "athlete@mail.com",
+    password: examplePwd5,
+    emailStatus: "active",
+  },
+  {
+    id: 6,
+    email: "staff@mail.com",
+    password: examplePwd6,
+    emailStatus: "active",
+  },
 ];

@@ -1,7 +1,8 @@
-import Teams from "../../../db/models/teams.model.js";
+import LinkMembersTeams from "../../../db/models/teamMembers.model.js";
 import UserTeams from "../../../db/models/userTeams.model.js";
 import helperObject from "../helper_data/teams.helperdata.js";
 import testHelpers from "../_test_helpers.js";
+import * as fs from "fs";
 const chai = testHelpers.getChai();
 const { insertData } = testHelpers;
 const expect = chai.expect;
@@ -273,6 +274,20 @@ describe("::: TEAMS CONTROLLER TESTS :::", () => {
       });
     });
 
+    describe("::: POST /teams/:id/team-logo/upload", () => {
+      it("Should upload team logo image and return the url for image", 
+      async() => {
+        let workingDir = process.cwd();
+        let csvPath =
+          workingDir + "/src/test/helper_data/teamLogo.png";
+        let res = await chai.requester
+          .post("/teams/1/team-logo/upload")
+          .set("Content-Type", "image/png")
+          .attach("png", fs.readFileSync(csvPath), "teamLogo.png")
+          .set("authorization", `Bearer ${staffUserToken}`);
+      })
+    })
+
     describe("::: GET /teams/me :::", () => {
       it("Should return status 400 when invalid/missing accessToken", async () => {
         const res = await chai.requester.get("/teams/me");
@@ -495,7 +510,265 @@ describe("::: TEAMS CONTROLLER TESTS :::", () => {
     }) */
   });
 
-  describe(":: /GET /teams/:id/venues ::", () => {
+  describe(":: POST /teams/:id/linked-members/create", () => {
+    it("Should return 404 when unknown teamId", 
+    async() => {
+      let res = await chai.requester
+        .post("/teams/100/linked-members/create")
+        .send({
+          data: [
+            {
+              email: "willfail@mail.com",
+              teamRole: "Athlete",
+            },
+          ],
+        })
+        .set("authorization", `Bearer ${staffUserToken}`);
+      expect(res.statusCode).to.eql(404);
+    });
+    
+    it("Should return 400 when providing invalid data",
+    async() => {
+      let res1 = await chai.requester
+        .post("/teams/1/linked-members/create")
+        .send({
+          data: [{
+            email: "invalid.com",
+          }]
+        })
+        .set("authorization", `Bearer ${staffUserToken}`);
+      
+        let res2 = await chai.requester
+        .post("/teams/1/linked-members/create")
+        .send({
+          data: [{
+            teamRole: "InvalidRole"
+          }]
+        })
+        .set("authorization", `Bearer ${staffUserToken}`);
+
+        let res3 = await chai.requester
+        .post("/teams/1/linked-members/create")
+        .send({
+          data: [{
+            email: "validmail@mail.com",
+            teamRole: "InvalidRole"
+          }]
+        })
+        .set("authorization", `Bearer ${staffUserToken}`);
+
+        let res4 = await chai.requester
+        .post("/teams/1/linked-members/create")
+        .send({
+          data: [{
+            email: "invalidmail.com",
+            teamRole: "Staff"
+          }]
+        })
+        .set("authorization", `Bearer ${staffUserToken}`);
+
+        expect(res1.statusCode).to.eql(400);
+        expect(res2.statusCode).to.eql(400);
+        expect(res3.statusCode).to.eql(400);
+        expect(res4.statusCode).to.eql(400);
+    });
+    
+    it("Should return created team member emails", async() => {
+      let res = await chai.requester
+        .post("/teams/1/linked-members/create")
+        .send({
+          data: [
+            {
+              email: "ili@tu.mk",
+              teamRole: "Athlete",
+            },
+            {
+              email: "cori@fibak.sj",
+              teamRole: "Physiotherapist",
+            },
+            {
+              email: "zaknu@cebbe.ie",
+              teamRole: "Athlete",
+            },
+          ],
+        })
+        .set("authorization", `Bearer ${staffUserToken}`);
+      
+      expect(res.statusCode).to.eql(201);
+      expect(res.body).to.have.key("data");
+      let {data} = res.body;
+      expect(data).to.be.ofSize(3);
+      expect(data[0].id).to.eql(1);
+      expect(data[0].teamRole).to.eql("Athlete");
+      expect(data[0].email).to.eql("ili@tu.mk");
+      expect(data[1].id).to.eql(2);
+      expect(data[1].teamRole).to.eql("Physiotherapist");
+      expect(data[1].email).to.eql("cori@fibak.sj");
+      expect(data[2].id).to.eql(3);
+      expect(data[2].teamRole).to.eql("Athlete");
+      expect(data[2].email).to.eql("zaknu@cebbe.ie");
+    })
+  });
+
+
+  describe(":: POST /teams/:id/linked-members/create/upload ::", () => {
+    it("Should return 404 when unknown teamId", async() => {
+      let workingDir = process.cwd();
+      let csvPath =
+        workingDir + "/src/test/helper_data/invalidTeamMembers.csv";
+      let res = await chai.requester
+        .post("/teams/100/linked-members/create/upload")
+        .set("Content-Type", "text/csv")
+        .attach("csv", fs.readFileSync(csvPath), "predefinedTeamMembers.csv")
+        .set("authorization", `Bearer ${staffUserToken}`);
+      expect(res.statusCode).to.eql(404);
+    });
+
+    /*
+    One solution could be to use transaction
+    
+    it("Should return 400 when providing invalid data", async() => {
+      let workingDir = process.cwd();
+      let csvPath =
+        workingDir + "/src/test/helper_data/invalidTeamMembers.csv";
+      let res = await chai.requester
+        .post("/teams/1/linked-members/create/upload")
+        .set("Content-Type", "text/csv")
+        .attach("csv", fs.readFileSync(csvPath), "invalidTeamMembers.csv")
+        .set("authorization", `Bearer ${staffUserToken}`);
+
+      expect(res.statusCode).to.eql(400);
+    });
+ */
+    it("Should return created team members from CSV upload",
+    async() => {
+      let workingDir = process.cwd();
+      let csvPath = workingDir + "/src/test/helper_data/predefinedTeamMembers.csv"
+      let res = await chai.requester
+        .post("/teams/1/linked-members/create/upload")
+        .set("Content-Type", "text/csv")
+        .attach("csv", fs.readFileSync(csvPath), "predefinedTeamMembers.csv")
+        .set("authorization", `Bearer ${staffUserToken}`);
+
+      expect(res.body).to.have.key("data");
+      let {data} = res.body;
+
+      expect(data[0].id).to.eql(4);
+      expect(data[0].teamRole).to.eql("Athlete");
+      expect(data[0].teamId).to.eql(1);
+
+      expect(data[1].id).to.eql(5);
+      expect(data[1].teamRole).to.eql("Athlete");
+      expect(data[1].teamId).to.eql(1);
+
+      expect(data[2].id).to.eql(6);
+      expect(data[2].teamRole).to.eql("Athlete");
+      expect(data[2].teamId).to.eql(1);
+    });
+  })
+
+
+  describe(":: PUT /teams/:id/linked-members/:linkedMemberId", () => {
+    it("Should return 404 when unknown teamId", async() => {
+      let res = await chai.requester
+        .put("/teams/100/linked-members/1")
+        .send({
+          teamRole: "Staff",
+          email: "oops@fixed.com",
+        })
+        .set("authorization", `Bearer ${staffUserToken}`);
+        expect(res.statusCode).to.eql(404);
+    });
+
+    it("Should return 400 when providing invalid data", async() => {
+      let res1 = await chai.requester
+        .put("/teams/1/linked-members/1")
+        .send({
+          email: "invalidmail.com",
+        })
+        .set("authorization", `Bearer ${staffUserToken}`);
+
+      let res2 = await chai.requester
+        .put("/teams/1/linked-members/1")
+        .send({
+          teamRole: "InvalidRole",
+        })
+        .set("authorization", `Bearer ${staffUserToken}`);
+
+        expect(res1.statusCode).to.eql(400);
+        expect(res2.statusCode).to.eql(400);
+    });
+    
+    it("Should return updated team member info which is linked to the team",
+    async() => {
+      let res = await chai.requester
+        .put("/teams/1/linked-members/1")
+        .send({
+          teamRole: "Staff",
+          email: "oops@fixed.com",
+        })
+        .set("authorization", `Bearer ${staffUserToken}`);
+
+      expect(res.statusCode).to.eql(200);
+      let data = res.body.data;
+      expect(data).to.have.all.keys(
+        "id",
+        "email",
+        "teamRole",
+        "teamId",
+        "updatedAt"
+      )
+      expect(data.id).to.eql(1)
+      expect(data.teamRole).to.eql("Staff")
+      expect(data.email).to.eql("oops@fixed.com")
+    });
+  })
+
+
+  describe(":: DELETE /teams/:id/linked-members/:linkedMemberId", () => {
+    it("Should return 404 when unknown team", async() => {
+      let res = await chai.requester
+        .delete("/teams/100/linked-members/1")
+        .set("authorization", `Bearer ${staffUserToken}`);
+      expect(res.statusCode).to.eql(404);
+    });
+
+    it("Should return 404 when unknown id", async() => {
+      let res = await chai.requester
+        .delete("/teams/1/linked-members/100")
+        .set("authorization", `Bearer ${staffUserToken}`);
+      expect(res.statusCode).to.eql(404);
+    });
+
+    it("Should delete member to team link record", async() => {
+      let res = await chai.requester
+        .delete("/teams/1/linked-members/1")
+        .set("authorization", `Bearer ${staffUserToken}`);
+      
+      expect(res.statusCode).to.eql(204);
+
+      //DB CHECK:
+      let dbResult = await LinkMembersTeams.query().select("id");
+      expect(dbResult).to.be.ofSize(5);
+      expect(dbResult.filter(id => id === 1)).to.be.ofSize(0);
+    })
+  })
+
+
+  describe(":: GET /teams/:id/linked-members/pending",
+  () => {
+    it("Should return pending team member email activations",
+    async() => {
+      let res = await chai.requester
+        .get("/teams/1/linked-members/pending")
+        .set("authorization", `Bearer ${staffUserToken}`);
+      expect(res.body.count).to.eql(5);
+      expect(res.body.data).to.be.ofSize(5);
+    });
+  })
+
+
+  describe(":: GET /teams/:id/venues ::", () => {
     it("Should return 404 when unknown teamId", async() => {
       let res = await chai.requester
         .get("/teams/100/venues")
@@ -515,7 +788,8 @@ describe("::: TEAMS CONTROLLER TESTS :::", () => {
     })
   })
 
-  describe(":: /POST /teams/:id/venues ::", () => {
+
+  describe(":: POST /teams/:id/venues ::", () => {
     it("Should return 404 when teamId unknown", async() => {
       let res = await chai.requester
         .post("/teams/100/venues")
@@ -592,7 +866,8 @@ describe("::: TEAMS CONTROLLER TESTS :::", () => {
     });
   })
 
-  describe(":: /PUT /teams/:id/venues/venue/:venueId ::", () => {
+
+  describe(":: PUT /teams/:id/venues/venue/:venueId ::", () => {
     it("Should return 404 when teamId unknown", async() => {
       let res = await chai.requester
         .put("/teams/100/venues/venue/1")
@@ -652,6 +927,7 @@ describe("::: TEAMS CONTROLLER TESTS :::", () => {
       expect(res.body.city).to.eql("Murcia");
     });
   })
+
 
   describe(":: DELETE /teams/:id/venues/venue/:venueId ::", () => {
 
