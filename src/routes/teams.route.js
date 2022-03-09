@@ -33,7 +33,16 @@ export default [
     },
   },
   {
-    // TODO: Consider just changing to /teams/member/:userId
+    method: "POST",
+    url: "/teams/:id/team-logo/upload",
+    preValidation: authenticateUser,
+    preHandler: checkStaffAdminRole,
+    handler: teamsHandler.uploadTeamLogo,
+    config: {
+      description: "Upload team logo"
+    }
+  },
+  {
     method: "GET",
     url: "/teams/me",
     preValidation: authenticateUser,
@@ -64,7 +73,7 @@ export default [
       description: "Update team information by team id",
     },
   },
-  {
+  { // DELETE ONLY AVAILABLE FOR RESOURCE CREATOR!
     method: "DELETE",
     url: "/teams/:id",
     schema: teamsSchema.deleteTeam,
@@ -74,6 +83,60 @@ export default [
     config: {
       description: "Delete team by team id",
     },
+  },
+  {
+    method: "GET",
+    url: "/teams/:id/linked-members/pending",
+    schema: teamsSchema.pendingTeamMemberActivations,
+    preValidation: authenticateUser,
+    preHandler: checkStaffAdminRole,
+    handler: teamsHandler.pendingTeamMemberActivations,
+    config: {
+      description: "Retrieve pending email activations of team members",
+    },
+  },
+  {
+    method: "POST",
+    url: "/teams/:id/linked-members/create",
+    schema: teamsSchema.addTeamMembers,
+    preValidation: authenticateUser,
+    preHandler: checkStaffAdminRole,
+    handler: teamsHandler.addTeamMembers,
+    config: {
+      description:
+        "Link member with email and pre-defined team role to team",
+    },
+  },
+  {
+    method: "POST",
+    url: "/teams/:id/linked-members/create/upload",
+    schema: teamsSchema.addTeamMembersCSV,
+    preValidation: authenticateUser,
+    preHandler: checkStaffAdminRole,
+    handler: teamsHandler.addTeamMembersCSV,
+    config: {
+      description:
+        "Link member with email to team and assign pre-defined team role via CSV upload",
+    },
+  },
+  {
+    method: "PUT",
+    url: "/teams/:id/linked-members/:linkedMemberId",
+    schema: teamsSchema.updateTeamMember,
+    preValidation: authenticateUser,
+    preHandler: checkStaffAdminRole,
+    handler: teamsHandler.updateTeamMember,
+    config: {
+      description: "Update member email / pre-defined team role linked to team",
+    },
+  },
+  {
+    method: "DELETE",
+    url: "/teams/:id/linked-members/:linkedMemberId",
+    schema: teamsSchema.deleteTeamMember,
+    preValidation: authenticateUser,
+    preHandler: checkStaffAdminRole,
+    handler: teamsHandler.deleteTeamMember,
   },
   {
     method: "GET",

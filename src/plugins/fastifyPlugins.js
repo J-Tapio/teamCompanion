@@ -119,6 +119,7 @@ export async function checkForUnknownUrlIdsPlugin(fastify, options) {
           .throwIfNotFound();
       }
     } catch (error) {
+      console.log("WENT HERE???")
       errorHandler(error, reply);
     }
   })
@@ -202,6 +203,7 @@ export async function checkActivitiesPriviledgePlugin(fastify, options) {
             teamId: request.params.teamId
           })
           .first()
+          
           let requestDate = new Date();
           let requestTimeInMilliseconds = requestDate.getTime();
           let activityStartInMilliseconds = new Date(activityStart).getTime();

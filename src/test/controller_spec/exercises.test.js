@@ -304,7 +304,6 @@ describe("::: EXERCISES CONTROLLER TESTS :::", () => {
     });
 
     describe(":: PUT - /exercises/:id ::", () => {
-      //TODO: COME BACK HERE LATER
       it("Should return status 403 when exercise creator or admin is not making the request", async () => {
         const res1 = await chai.requester
           .put("/exercises/1")
@@ -511,8 +510,6 @@ describe("::: EXERCISES CONTROLLER TESTS :::", () => {
               "New exercise will be done with known equipment in this way.",
           })
           .set("authorization", `Bearer ${coachUserToken}`);
-
-          console.log(res.body);
 
         expect(res.statusCode).to.eql(201);
         expect(res.body.exerciseId).to.eql(7);

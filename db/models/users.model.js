@@ -1,4 +1,4 @@
-import {Model} from "objection";
+import { Model } from "objection";
 import UserInformation from "./userInformation.model.js";
 import Teams from "./teams.model.js";
 
@@ -23,7 +23,8 @@ class Users extends Model {
       properties: {
         id: { type: "integer" },
         email: { type: "string", minLength: 1, maxLength: 100 },
-        password: { type: "string", minLength: 1, maxLength: 100 },
+        emailStatus: {enum: ["pending", "active"]},
+        password: { type: "string", minLength: 8, maxLength: 100 },
         role: { enum: ["admin", "user"] },
         refreshToken: { type: "string" },
       },

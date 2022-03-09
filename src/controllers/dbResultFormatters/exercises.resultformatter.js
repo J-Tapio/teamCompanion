@@ -1,6 +1,12 @@
 export default class ExercisesQueryFormatter {
 
-  static formatAllExercises(dbRows) {
+  static allExercises(dbRows) {
+    /**
+     * Reduce to array of sublists by exercise Id.
+     * Map through sublists, return single object.
+     * Object contains single exercise information.
+     * Equipment property contains array of equipment related to exercise.
+     */
     const data = dbRows.reduce((acc, currentVal) => {
       if (
         acc.length > 0 &&
@@ -33,7 +39,12 @@ export default class ExercisesQueryFormatter {
     return { count: data.length, data}
   }
   
-  static formatExerciseById(dbRows) {
+  static exerciseById(dbRows) {
+    /**
+     * Return object, which contains exercise information
+     * Equipment information may vary by amount of equipment linked to exercise
+     * Hence, map needed if more rows than one (exercise related equipment > 1)
+     */
     if(dbRows.length > 1) {
       return {
         id: dbRows[0].id,
@@ -69,8 +80,3 @@ export default class ExercisesQueryFormatter {
     }
   }
 }
-
-
-/* export default {
-  allEx, byIdEx
-} */

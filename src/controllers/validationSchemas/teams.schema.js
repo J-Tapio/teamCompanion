@@ -160,6 +160,93 @@ let updateTeamResponse = {
   }, ...errors
 }
 
+let addMemberToTeamLinksBody = {
+  type: "object",
+  required: ["data"],
+  properties: {
+    data: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["email", "teamRole"],
+        properties: {
+          email: { type: "string", format: "email" },
+          teamRole: {enum: ["Coach", "Trainer", "Physiotherapist", "Staff", "Athlete"]}
+        },
+      },
+    },
+  },
+};
+
+let addMemberToTeamLinksResponse = {
+  201: {
+    type: "object",
+    properties: {
+      data: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            id: { type: "integer" },
+            email: { type: "string", format: "email" },
+            teamRole: {
+              enum: ["Coach", "Trainer", "Physiotherapist", "Staff", "Athlete"],
+            },
+            teamId: { type: "integer" },
+            createdAt: {type: "string", format: "date-time" },
+          },
+        },
+      },
+    },
+  },
+  ...errors
+};
+
+let updateMemberToTeamLinkBody = {
+  type: "object",
+  properties: {
+    email: { type: "string", format: "email" },
+    teamRole: {
+      enum: ["Coach", "Trainer", "Physiotherapist", "Staff", "Athlete"],
+    },
+  },
+};
+
+let updateMemberToTeamLinkResponse = {
+  200: {
+    type: "object",
+    properties: {
+      data: {
+        type: "object",
+        properties: {
+          id: { type: "integer" },
+          email: { type: "string", format: "email" },
+          teamId: { type: "integer" },
+          teamRole: {
+            enum: ["Coach", "Trainer", "Physiotherapist", "Staff", "Athlete"],
+          },
+          updatedAt: { type: "string", format: "date-time" }
+        }
+      }
+    },
+  },
+};
+
+let pendingTeamMemberActivationsResponse = {
+  200: {
+    type: "object",
+    properties: {
+      count: { type: "integer" },
+      data: {
+        type: "array",
+        properties: {
+          email: { type: "string", format: "email" }
+        }
+      }
+    }
+  },
+  ...errors,
+}
 /**
  * Teams body & response schemas overall
  */
@@ -192,11 +279,39 @@ let deleteTeam = {
   },
 };
 
+let addTeamMembers = {
+  body: addMemberToTeamLinksBody,
+  response: addMemberToTeamLinksResponse
+}
+
+let addTeamMembersCSV = {
+  response: addMemberToTeamLinksResponse
+}
+
+let updateTeamMember = {
+  body: updateMemberToTeamLinkBody,
+  response: updateMemberToTeamLinkResponse,
+};
+
+let deleteTeamMember = {
+  response: {
+    ...errors,
+  }
+}
+
+let pendingTeamMemberActivations = {
+  response: pendingTeamMemberActivationsResponse,
+}
+
 export default {
   allTeams,
   teamById,
   createTeam,
   updateTeam,
   deleteTeam,
-  usersTeams
+  usersTeams,
+  addTeamMembers,
+  addTeamMembersCSV,
+  updateTeamMember,
+  deleteTeamMember
 }

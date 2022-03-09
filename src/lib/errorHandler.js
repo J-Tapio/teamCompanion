@@ -1,4 +1,6 @@
 import objection from "objection";
+import fastify from "../../app.js";
+
 const {
   ValidationError,
   NotFoundError,
@@ -12,13 +14,11 @@ const {
 } = objection;
 import AppError from "./appError.js";
 
-//TODO: Change filename to appErrors.js
-//TODO: Extend from Error class AppError class since it is needed in some cases.
 
 export default function errorHandler(err, reply) {
-  console.log('\x1b[31m%s\x1b[0m',":::::ERROR HANDLER LOG START:::::");
+  console.log('\x1b[31m%s\x1b[0m',":::::ERROR HANDLER LOG START:::::\n");
   console.log(err);
-  console.log('\x1b[31m%s\x1b[0m',":::::ERROR HANDLER LOG END:::::")
+  console.log('\x1b[31m%s\x1b[0m',"\n:::::ERROR HANDLER LOG END:::::")
 
   if (err instanceof ValidationError) {
     switch (err.type) {
@@ -77,8 +77,21 @@ export default function errorHandler(err, reply) {
         reply.internalServerError();
         break;
     }
+  } else if(err instanceof fastify.multipartErrors.RequestFileTooLargeError) {
+    // Filesize limit reached
+    reply.badRequest({ message: err.message });
+
   } else if(err instanceof AppError) {
     switch(err.message) {
+      case "Image upload failed":
+        reply.internalServerError("Image upload failed");
+        break;
+      case "Mimetype for image not png or jpeg":
+        reply.badRequest("Only png or jpeg image formats allowed");
+        break;
+      case "Mimetype not text/csv":
+        reply.badRequest("Only CSV file upload allowed");
+        break;
       case "DB id matches unequal with payload data":
         reply.notFound({ message: err.message });
         break;

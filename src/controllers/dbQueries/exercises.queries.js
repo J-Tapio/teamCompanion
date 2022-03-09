@@ -25,8 +25,9 @@ export default class ExercisesQueries extends ExercisesQueryFormatter {
       .orderBy("equipmentId", "asc")
       .throwIfNotFound();
     
-    return this.formatAllExercises(dbResults);
+    return ExercisesQueryFormatter.allExercises(dbResults);
   }
+
 
   static async exerciseById({exerciseId}) {
     let dbResult = await Exercises.query()
@@ -47,8 +48,9 @@ export default class ExercisesQueries extends ExercisesQueryFormatter {
       .where("exercises.id", exerciseId)
       .throwIfNotFound();
     
-    return this.formatExerciseById(dbResult);
+    return ExercisesQueryFormatter.exerciseById(dbResult);
   }
+
 
   static async createExercise({userId, exerciseInformation}) {
     let { updatedAt, ...createdExercise } = await Exercises.query()
@@ -57,17 +59,19 @@ export default class ExercisesQueries extends ExercisesQueryFormatter {
     return createdExercise;
   }
 
-  static async updateExercise({exerciseId, createdBy, updateInformation}) {
+  static async updateExercise({exerciseId, requestUserId, updateInformation}) {
     let {createdAt, ...updatedExercise} = await Exercises.query()
       .patch(updateInformation)
       .where({
         id: exerciseId,
+        createdBy: requestUserId
       })
-      .returning("id", "exerciseName", "exerciseInfo", "updatedAt")
+      .returning("*")
       .first()
       .throwIfNotFound();
     return updatedExercise;
   }
+
 
   static async deleteExercise({exerciseId}) {
     await Exercises.query()
@@ -75,11 +79,13 @@ export default class ExercisesQueries extends ExercisesQueryFormatter {
     .throwIfNotFound();
   }
 
+
   static async allExercisesAndEquipment() {
     let exercises = await Exercises.query().select("id", "exerciseName");
     let equipment = await Equipment.query().select("id", "equipmentName");
     return { exercises, equipment };
   }
+
 
   static async #addNewExerciseEquipment(exerciseEquipment) {
     // Created exercise-equipment join table id:
@@ -106,6 +112,7 @@ export default class ExercisesQueries extends ExercisesQueryFormatter {
       .where("exercisesEquipment.id", id)
       .first();
   }
+
 
   static async createExerciseEquipment({userId, exerciseId, equipmentId, data}) {
     if(!exerciseId) {
@@ -135,7 +142,6 @@ export default class ExercisesQueries extends ExercisesQueryFormatter {
       exercisePositions: data.exercisePositions || null,
       exerciseInformation: data.exerciseInformation || null,
     }
-    console.log(exerciseEquipment)
     return await this.#addNewExerciseEquipment(exerciseEquipment);
   }
 

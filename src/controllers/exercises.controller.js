@@ -38,9 +38,10 @@ async function updateExercise(request, reply) {
   try {
     let updatedExercise = await ExercisesQueries.updateExercise({
       exerciseId: parseInt(request.params.id),
-      createdBy: request.user.id,
+      requestUserId: request.user.id,
       updateInformation: request.body
     });
+    console.log(updatedExercise)
     reply.send(updatedExercise);
   } catch (error) {
     errorHandler(error, reply);
