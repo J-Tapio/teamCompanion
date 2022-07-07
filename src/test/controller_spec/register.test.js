@@ -10,7 +10,7 @@ const expect = chai.expect;
 
 describe("::: POST /register :::", () => {
 
-  it("Should return status 400 when invalid property provided", 
+  it("Should return status 400 when invalid property name provided", 
   async() => {
     const res = await chai.requester.post("/register")
     .send({
@@ -44,7 +44,7 @@ describe("::: POST /register :::", () => {
     });
 
     expect(res.statusCode).to.eql(400);
-    //TODO: Find out later if one can change the response message when AJV validation error happens on password. Is it good idea to reveal against what regex pattern the password string is compared. I guess not!?. Implicitly it seems to return back that password does not meet requirements followed by the actual regex pattern used.
+    //TODO: Find out later if one can change the response message when AJV validation error happens on password validation. Is it good idea to reveal against what regex pattern the password string is compared. I guess not!?. Implicitly it seems to return back that password does not meet requirements followed by the actual regex pattern used.
   });
 
   it("Should return status 201 and message that email verification has been sent",

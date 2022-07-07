@@ -18,6 +18,8 @@ export default class FitnessQueryFormatter {
     };
   }
 
+  //TODO: Consider refactoring from functional approach to separate functions
+  //! Now only comments can guide with readability what is happening step-by-step
   static allTeamFitnessData(dbRows) {
     // dbRows sublisted per userTeamId
     let data = dbRows
@@ -33,7 +35,7 @@ export default class FitnessQueryFormatter {
           return acc;
         }
       }, [])
-      // sublistByUserTeamId sublisted by userTeamActivityId
+      // sublist of userTeamId sublisted by userTeamActivityId
       .map((sublistByUserTeamId) => {
         return sublistByUserTeamId.reduce((acc, currentVal) => {
           if (

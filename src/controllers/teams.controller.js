@@ -60,6 +60,7 @@ async function teamById(request, reply) {
     let team = await TeamsQueries.teamById({
       teamId: parseInt(request.params.id)
     });
+
     reply.send(team);
   } catch (error) {
     errorHandler(error, reply);

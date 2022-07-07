@@ -1,4 +1,3 @@
-// Imports =====================================================================
 import 'dotenv/config';
 import Knex from "knex";
 import { Model } from "objection";
@@ -12,29 +11,26 @@ import fastifyMultipart from "fastify-multipart";
 import fp from "fastify-plugin";
 import knexConfiguration from "./knexfile.js";
 import {
-  authPlugin,
-  checkStaffAdminRolePlugin,
-  checkTrainingAdminRolePlugin,
-  checkActivitiesPriviledgePlugin,
-  checkForUnknownUrlIdsPlugin
+  authenticationJWT,
+  checkStaffAdminRole,
+  checkTrainingAdminRole,
+  checkActivitiesPriviledge,
+  checkForUnknownUrlIds
 } from "./src/plugins/fastifyPlugins.js";
 import appRoutes from "./src/routes/index.js";
 import { adminCheck } from "./src/decorators/fastifyDecorators.js";
 
-
-// Initialize Knex / Objection =================================================
+// Initialize Knex / Objection Model
 export const db = Knex(knexConfiguration.development);
 Model.knex(db);
 
-// Initialize Fastify & register plugins, routes etc. ==========================
+// Initialize Fastify.
 const fastify = Fastify({
   logger: {
     prettyPrint: true,
     level: "error",
   },
 });
-
-
 fastify.register(fastifyCors); // Specify whitelist later.
 fastify.register(fastifyPrintRoutes);
 fastify.register(fastifySwagger, {
@@ -52,13 +48,12 @@ fastify.register(fastifySwagger, {
 fastify.register(fastifySensible);
 fastify.register(fastifyBcrypt, { saltWorkFactor: 14 });
 fastify.register(fastifyMultipart);
-fastify.register(fp(authPlugin));
-fastify.register(fp(checkStaffAdminRolePlugin));
-fastify.register(fp(checkTrainingAdminRolePlugin));
-fastify.register(fp(checkActivitiesPriviledgePlugin));
-fastify.register(fp(checkForUnknownUrlIdsPlugin));
+fastify.register(fp(authenticationJWT));
+fastify.register(fp(checkStaffAdminRole));
+fastify.register(fp(checkTrainingAdminRole));
+fastify.register(fp(checkActivitiesPriviledge));
+fastify.register(fp(checkForUnknownUrlIds));
 fastify.decorate("checkAdminRole", adminCheck);
-
 // Register routes
 appRoutes.forEach((endpoint) => {
   fastify.route(endpoint);

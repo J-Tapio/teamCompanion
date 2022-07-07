@@ -16,5 +16,3 @@ export default async function sendVerificationEmail(recipientEmail, token) {
   await sgMail.send(message);
 }
 
-export default sendVerificationEmail;
-

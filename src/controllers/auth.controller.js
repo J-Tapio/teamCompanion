@@ -1,3 +1,4 @@
+// TODO: Come back to this later after demo-app proves to be functional.
 import Users from "../../db/models/users.model";
 import errorHandler from "../lib/errorHandler";
 
@@ -8,7 +9,7 @@ async function verifyAccount(request, reply) {
       .where({id, email})
       .throwIfNotFound();
 
-    // Re-direct to login-page?
+    //? Logic after this in overall?
   } catch (error) {
     errorHandler(error, reply);
   }

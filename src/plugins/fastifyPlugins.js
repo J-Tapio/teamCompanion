@@ -4,12 +4,14 @@ import dotenv from "dotenv";
 import UserTeams from "../../db/models/userTeams.model.js";
 import TeamActivities from "../../db/models/teamActivities.model.js";
 import UserTeamActivities from "../../db/models/userTeamActivities.model.js";
-import _ from "lodash";
 import Teams from "../../db/models/teams.model.js";
+import _ from "lodash";
 
 dotenv.config({ path: "../../.env" });
 
-export async function authPlugin(fastify, options) {
+//TODO: REFACTOR! Proof of concept and works where needed but some plugin implementations are cluttery.
+
+export async function authenticationJWT(fastify, options) {
   fastify.register(fastifyJwt, {
     formatUser: function (user) {
       return { id: user.id, roles: user.roles };
@@ -26,7 +28,7 @@ export async function authPlugin(fastify, options) {
   });
 }
 
-export async function checkStaffAdminRolePlugin(fastify, options) {
+export async function checkStaffAdminRole(fastify, options) {
   fastify.decorate("checkStaffAdminRole", async function (request, reply) {
     try {
       if(request.user.roles.includes("user")) {
@@ -56,7 +58,7 @@ export async function checkStaffAdminRolePlugin(fastify, options) {
   });
 }
 
-export async function checkTrainingAdminRolePlugin(fastify, options) {
+export async function checkTrainingAdminRole(fastify, options) {
   fastify.decorate("checkTrainingAdminRole", async function (request, reply) {
     try {
       if (request.user.roles.includes("user")) {
@@ -68,8 +70,6 @@ export async function checkTrainingAdminRolePlugin(fastify, options) {
           .where({ userId })
           .first();
 
-        console.log(teamMember);
-
         if (!teamMember || !allowedTeamRoles.includes(teamMember.teamRole)) {
           reply.forbidden();
         }
@@ -80,7 +80,7 @@ export async function checkTrainingAdminRolePlugin(fastify, options) {
   });
 }
 
-export async function checkForUnknownUrlIdsPlugin(fastify, options) {
+export async function checkForUnknownUrlIds(fastify, options) {
   fastify.decorate("checkForUnknownUrlIds", async function(request,reply) {
     try {
       // Check if team exists:
@@ -119,13 +119,13 @@ export async function checkForUnknownUrlIdsPlugin(fastify, options) {
           .throwIfNotFound();
       }
     } catch (error) {
-      console.log("WENT HERE???")
       errorHandler(error, reply);
     }
   })
 }
 
-export async function checkActivitiesPriviledgePlugin(fastify, options) {
+//TODO: Think through again the implementation. Refactor as needed.
+export async function checkActivitiesPriviledge(fastify, options) {
   fastify.decorateRequest("checkActivitiesPriviledge", async function(request, reply) {
     try {
 

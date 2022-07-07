@@ -1,6 +1,6 @@
 import testHelpers from "../_test_helpers.js";
 const chai = testHelpers.getChai();
-const { insertData } = testHelpers;
+const { insertData, logInUsers } = testHelpers;
 const expect = chai.expect;
 import Equipment from "../../../db/models/equipment.model.js";
 
@@ -11,32 +11,12 @@ describe("::: EQUIPMENT CONTROLLER TESTS :::", () => {
   let trainerUserToken;
   let athleteUserToken;
 
+
   before(async () => {
     await insertData();
-
-    adminUserToken = (
-      await chai.requester
-        .post("/login")
-        .send({ email: "admin@mail.com", password: "admin123" })
-    ).body.accessToken;
-
-    coachUserToken = (
-      await chai.requester
-        .post("/login")
-        .send({ email: "coach@mail.com", password: "coach123" })
-    ).body.accessToken;
-
-    trainerUserToken = (
-      await chai.requester
-        .post("/login")
-        .send({ email: "trainer@mail.com", password: "trainer123" })
-    ).body.accessToken;
-
-    athleteUserToken = (
-      await chai.requester
-        .post("/login")
-        .send({ email: "athlete@mail.com", password: "athlete123" })
-    ).body.accessToken;
+    // Assignment separate from declaration, brackets needed. - MDN
+    ({ adminUserToken, coachUserToken, trainerUserToken, athleteUserToken } =
+      await logInUsers(chai));
   });
 
   

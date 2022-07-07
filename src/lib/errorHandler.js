@@ -18,25 +18,30 @@ import AppError from "./appError.js";
 export default function errorHandler(err, reply) {
   console.log('\x1b[31m%s\x1b[0m',":::::ERROR HANDLER LOG START:::::\n");
   console.log(err);
-  console.log('\x1b[31m%s\x1b[0m',"\n:::::ERROR HANDLER LOG END:::::")
+  console.log('\x1b[31m%s\x1b[0m',"\n:::::ERROR HANDLER LOG END:::::\n")
 
   if (err instanceof ValidationError) {
     switch (err.type) {
-      case "ModelValidation":
+      case "ModelValidation": {
         reply.badRequest();
         break;
-      case "RelationExpression":
+      }
+      case "RelationExpression": {
         reply.badRequest();
         break;
-      case "UnallowedRelation":
+      }
+      case "UnallowedRelation": {
         reply.badRequest();
         break;
-      case "InvalidGraph":
+      }
+      case "InvalidGraph": {
         reply.badRequest();
         break;
-      default:
+      }
+      default: {
         reply.badRequest();
         break;
+      }
     }
   } else if (err instanceof ConstraintViolationError) {
     reply.badRequest();
@@ -115,5 +120,3 @@ export default function errorHandler(err, reply) {
     reply.internalServerError();
   }
 }
-
-//TODO: Refactor later to Switch-Case function

@@ -28,8 +28,9 @@ async function teamLogo(request) {
 
 /**
  * Image upload for team-members could be feature later
- * But should it be done? Just considering privacy in overall.
+ * But should it be done? Just considering privacy in overall and.
  */
+
 /* async function userImage(request) {
   let data = await request.file();
   let image = await uploadToCloudinary(data);

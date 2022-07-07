@@ -2,54 +2,21 @@ import TeamActivities from "../../../db/models/teamActivities.model.js";
 import UserTeamActivities from "../../../db/models/userTeamActivities.model.js";
 import testHelpers from "../_test_helpers.js";
 const chai = testHelpers.getChai();
-const { insertData } = testHelpers;
+const { insertData, logInUsers } = testHelpers;
 const expect = chai.expect;
 
 
-//? POST, PUT - add also Db level check for inserted data(?)
-// Participant POST/PUT contain dbChecks.
-
-
 describe("::: ACTIVITIES CONTROLLER TESTS :::", () => {
-
     let adminUserToken;
     let coachUserToken;
     let trainerUserToken;
     let athleteUserToken;
-    let staffUserToken;
 
     before(async () => {
       await insertData();
-
-      adminUserToken = (
-        await chai.requester
-          .post("/login")
-          .send({ email: "admin@mail.com", password: "admin123" })
-      ).body.accessToken;
-      
-      coachUserToken = (
-        await chai.requester
-          .post("/login")
-          .send({ email: "coach@mail.com", password: "coach123" })
-      ).body.accessToken;
-
-      trainerUserToken = (
-        await chai.requester
-          .post("/login")
-          .send({ email: "trainer@mail.com", password: "trainer123" })
-      ).body.accessToken;
-
-      athleteUserToken = (
-        await chai.requester
-          .post("/login")
-          .send({ email: "athlete@mail.com", password: "athlete123" })
-      ).body.accessToken;
-
-      staffUserToken = (
-        await chai.requester
-          .post("/login")
-          .send({ email: "athlete@mail.com", password: "staff123" })
-      ).body.accessToken;
+      // Assignment separate from declaration, brackets needed. - MDN
+      ({ adminUserToken, coachUserToken, trainerUserToken, athleteUserToken } =
+        await logInUsers(chai));
     });
 
     describe(":: With invalid / missing token / no priviledges ::", () => {
