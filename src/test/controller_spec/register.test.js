@@ -54,7 +54,7 @@ describe("::: POST /register :::", () => {
         password: "PassWord00_Valid",
       });
 
-      console.log(res.body.message)
+      
       expect(res.statusCode).to.eql(201);
       expect(res.body.message).to.eql("Email verification for account has been sent")
 

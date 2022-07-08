@@ -2,7 +2,7 @@ import 'dotenv/config';
 import Knex from "knex";
 import { Model } from "objection";
 import Fastify from "fastify";
-import fastifyCors from "fastify-cors";
+import fastifyCors from '@fastify/cors';
 import fastifySwagger from "fastify-swagger";
 import fastifyPrintRoutes from "fastify-print-routes";
 import fastifyBcrypt from "fastify-bcrypt";
@@ -21,7 +21,7 @@ import appRoutes from "./src/routes/index.js";
 import { adminCheck } from "./src/decorators/fastifyDecorators.js";
 
 // Initialize Knex / Objection Model
-export const db = Knex(knexConfiguration.development);
+export const db = Knex(knexConfiguration[process.env.NODE_ENV]);
 Model.knex(db);
 
 // Initialize Fastify.

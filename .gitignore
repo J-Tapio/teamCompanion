@@ -1,5 +1,7 @@
+.pg_data
 .vscode
 .env
 /node_modules
 notes.txt
 exercisesToEquipment.js
+pwd_hashing.js
