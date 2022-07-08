@@ -1,15 +1,4 @@
-//import bcrypt from "bcryptjs";
-
-/* 
-Done once, then copy-pasted here from db information. 
-Avoid time-consuming task within tests.
-const examplePwd1 = bcrypt.hashSync("admin123", 14);
-const examplePwd2 = bcrypt.hashSync("coach123", 14);
-const examplePwd3 = bcrypt.hashSync("physio123", 14);
-const examplePwd4 = bcrypt.hashSync("trainer123", 14);
-const examplePwd5 = bcrypt.hashSync("athlete123", 14);
-const examplePwd6 = bcrypt.hashSync("staff123", 14); 
-*/
+// Passwords hashed before-hand for db seed insertion
 
 const examplePwd1 =
   "$2a$14$xThvh0pzkahL5b7PhHhfeu0GHgdfA2jGRZ/UoWoAs/BnvHS79uboS";

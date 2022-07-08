@@ -7,7 +7,7 @@ const types = pg.types;
 types.setTypeParser(types.builtins.DATE, (val) => val);
 
 export default {
-  development: {
+  test: {
     client: "pg",
     connection: {
       database: "teamcompanion_db_test",
@@ -28,8 +28,29 @@ export default {
     },
     ...knexSnakeCaseMappers(),
   },
+  development: {
+    client: "pg",
+    connection: {
+      database: "teamcompanion_db_development",
+      user: process.env.DEV_POSTGRES_USER,
+      password: process.env.DEV_POSTGRES_PASSWORD,
+      host: "localhost",
+      port: 5555,
+    },
+    pool: {
+      min: 2,
+      max: 10,
+    },
+    migrations: {
+      directory: process.cwd() + "/db/migrations",
+    },
+    seeds: {
+      directory: process.cwd() + "/db/seeds/development_data_files",
+    },
+    ...knexSnakeCaseMappers(),
+  },
 
-  production: {
+  /* production: {
     client: "pg",
     connection: {
       database: "",
@@ -49,5 +70,5 @@ export default {
       directory: process.cwd() + "/db/seeds/prod_data_files",
     },
     ...knexSnakeCaseMappers(),
-  },
+  }, */
 };

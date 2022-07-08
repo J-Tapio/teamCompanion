@@ -7,7 +7,7 @@ const chai = testHelpers.getChai();
 const { insertData, logInUsers } = testHelpers;
 const expect = chai.expect;
 
-describe.only("::: TEAMS CONTROLLER TESTS :::", () => {
+describe("::: TEAMS CONTROLLER TESTS :::", () => {
   let adminUserToken;
   let coachUserToken;
   let athleteUserToken;

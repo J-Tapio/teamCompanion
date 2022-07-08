@@ -5,11 +5,11 @@ export async function loginUser(request, reply) {
   try {
     const accessToken = fastify.jwt.sign(
       {id: request.user.id, roles: [request.user.role]}, 
-      {expiresIn: "15min"}
+      {expiresIn: "1 day"}
     );
     const refreshToken = fastify.jwt.sign(
       {id: request.user.id, roles: [request.user.role]}, 
-      {expiresIn: "7 days"}
+      {expiresIn: "10 days"}
     );
 
     await Users.query()

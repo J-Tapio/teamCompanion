@@ -3,7 +3,6 @@ import { Model } from "objection";
 import ActivityTypes from "./activityTypes.model.js";
 import Venues from "./venues.model.js";
 import UserTeams from "./userTeams.model.js";
-import UserTeamActivities from "./userTeamActivities.model.js";
 import Teams from "./teams.model.js";
 
 class TeamActivities extends Model {
