@@ -1,4 +1,4 @@
-import fastifyJwt from "fastify-jwt";
+import fastifyJwt from "@fastify/jwt";
 import errorHandler from "../lib/errorHandler.js";
 import dotenv from "dotenv";
 import UserTeams from "../../db/models/userTeams.model.js";

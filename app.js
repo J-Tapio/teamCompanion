@@ -2,12 +2,12 @@ import 'dotenv/config';
 import Knex from "knex";
 import { Model } from "objection";
 import Fastify from "fastify";
-import fastifyCors from '@fastify/cors';
-import fastifySwagger from "fastify-swagger";
+import fastifyCors from "@fastify/cors";
+import fastifySwagger from '@fastify/swagger';
 import fastifyPrintRoutes from "fastify-print-routes";
 import fastifyBcrypt from "fastify-bcrypt";
-import fastifySensible from "fastify-sensible";
-import fastifyMultipart from "fastify-multipart";
+import fastifySensible from '@fastify/sensible';
+import fastifyMultipart from '@fastify/multipart';
 import fp from "fastify-plugin";
 import knexConfiguration from "./knexfile.js";
 import {
