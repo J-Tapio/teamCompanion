@@ -2,9 +2,19 @@ import { knexSnakeCaseMappers } from "objection";
 import pg from "pg";
 const types = pg.types;
 
-// Does not modify date-of-birth column value to Date object when returned
-// Seems to do this by default
+/** 
+ * Do not modify date-of-birth column value to Date object when returned
+ * Seems to do this by default
+*/
 types.setTypeParser(types.builtins.DATE, (val) => val);
+/** 
+  * Knex by default returns decimals in string format to avoid rounding errors.
+  * Referencing StackOverflow answer: https://stackoverflow.com/questions/45569216/knex-postgres-returns-strings-for-numeric-decimal-values
+  * Since the request body values for assigned_ex_weight column in exercise_sets table is validated with AJV8 by 'multipleOf: 0.250', decision is to return value as decimal since eg. for weight of 30 should only 30, 30.25 (or 30.250), 30.50 (or 30.500), 30.75 (or 30.750) be valid input values. 
+  * Decimal is valid JSON but controversial topic https://stackoverflow.com/questions/35709595/why-would-you-use-a-string-in-json-to-represent-a-decimal-number
+  * For eg. business/payment use-cases returning string format would be safe as suggested.
+*/
+types.setTypeParser(types.builtins.NUMERIC, (val) => +val);
 
 export default {
   test: {

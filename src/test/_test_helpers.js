@@ -8,7 +8,7 @@ chai.use(chaiHttp);
 chai.use(assertArrays);
 
 server
-  .listen(3005)
+  .listen({port: process.env.PORT || 3005})
   .then((server) => (chai.requester = chai.request(server).keepOpen()));
 
 export async function initializeDB() {
