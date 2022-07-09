@@ -1,12 +1,12 @@
-import app from "./app.js";
+import server from "./app.js";
 const PORT = process.env.PORT || 3000;
 
-app.listen({port: PORT}, function (error, address) {
+server.listen({port: PORT}, function (error, address) {
   if (error) {
-    fastify.log.error(error);
+    server.log.error(error);
     process.exit(1); // Close-down the node process.
   } else {
-    console.log("Server started on port: ", PORT)
+    server.log.info(`Server started on port: ${PORT}`)
   }
 })
 

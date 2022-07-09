@@ -26,35 +26,45 @@ Model.knex(db);
 
 // Initialize Fastify.
 const fastify = Fastify({
-  logger: {level: "error"},
+  logger: {levels: ["error", "info"]},
   exposeHeadRoutes: false,
 });
-fastify.register(fastifyPrintRoutes);
-fastify.register(fastifyCors); // Specify whitelist later.
-fastify.register(fastifySwagger, {
-  exposeRoute: true,
-  routePrefix: "/documentation",
-  swagger: {
-    info: {
-      title: "TeamCompanion",
-      description: "Team Companion API",
-      version: "0.1.0",
-    },
-    host: "https://teamcompanion.juha-tap.io/",
-  },
-});
-fastify.register(fastifySensible);
-fastify.register(fastifyBcrypt, { saltWorkFactor: 14 });
-fastify.register(fastifyMultipart);
-fastify.register(fp(authenticationJWT));
-fastify.register(fp(checkStaffAdminRole));
-fastify.register(fp(checkTrainingAdminRole));
-fastify.register(fp(checkActivitiesPriviledge));
-fastify.register(fp(checkForUnknownUrlIds));
-fastify.decorate("checkAdminRole", adminCheck);
-// Register routes
-appRoutes.forEach((endpoint) => {
-  fastify.route(endpoint);
-});
+
+async function initializeFastify() {
+  try {
+    await fastify.register(fastifyPrintRoutes);
+    await fastify.register(fastifyCors); // Specify whitelist later.
+    await fastify.register(fastifySwagger, {
+      exposeRoute: true,
+      routePrefix: "/documentation",
+      swagger: {
+        info: {
+          title: "TeamCompanion",
+          description: "Team Companion API",
+          version: "0.1.0",
+        },
+        host: "https://teamcompanion.juha-tap.io/",
+      },
+    });
+    await fastify.register(fastifySensible);
+    await fastify.register(fastifyBcrypt, { saltWorkFactor: 14 });
+    await fastify.register(fastifyMultipart);
+    await fastify.register(fp(authenticationJWT));
+    await fastify.register(fp(checkStaffAdminRole));
+    await fastify.register(fp(checkTrainingAdminRole));
+    await fastify.register(fp(checkActivitiesPriviledge));
+    await fastify.register(fp(checkForUnknownUrlIds));
+    fastify.decorate("checkAdminRole", adminCheck);
+    // Register routes
+    appRoutes.forEach((endpoint) => {
+      fastify.route(endpoint);
+    });
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
+  }
+}
+
+await initializeFastify();
 
 export default fastify;
