@@ -13,7 +13,7 @@ class ExerciseSets extends Model {
 
     /**
      * If ExWeight not null, ExRepetitions cannot be null
-     * ! Not operator used to check also 0, undefined, false,empty string etc.
+     * ! Check also for 0, undefined, false, empty string etc.
      * Might be overkill, Fastify and Objection already validate payload
      */
     if (
@@ -57,14 +57,14 @@ class ExerciseSets extends Model {
         id: { type: "integer" },
         userTeamActivitiesId: { type: "integer" },
         exercisesEquipmentId: { type: "integer" },
-        assignedExWeight: { type: ["number", "null"], multipleOf: 0.01 },
+        assignedExWeight: { type: ["number", "null"], multipleOf: 0.250 },
         assignedExRepetitions: { type: ["integer", "null"] },
         assignedExDuration: { type: ["integer", "null"] },
         assignedExDistance: { type: ["integer", "null"] },
         assignedExVariation: { type: ["string", "null"] },
         assignedSetDone: { type: "boolean" },
         assignedSetDonePartially: { type: "boolean" },
-        completedExWeight: { type: ["number", "null"], multipleOf: 0.01 },
+        completedExWeight: { type: ["number", "null"], multipleOf: 0.250 },
         completedExRepetitions: { type: ["integer", "null"] },
         completedExDuration: { type: ["integer", "null"] },
         completedExDistance: { type: ["integer", "null"] },

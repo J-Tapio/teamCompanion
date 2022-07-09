@@ -589,7 +589,7 @@ let validPostData = [
   {
     userTeamActivitiesId: 15,
     exercisesEquipmentId: 8,
-    assignedExWeight: 30,
+    assignedExWeight: 30.750,
     assignedExRepetitions: 10,
     assignedExDuration: null,
     assignedExDistance: null,

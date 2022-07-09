@@ -180,11 +180,16 @@ async function fitnessByUserTeamActivityId(request, reply) {
 
 async function createExerciseSets(request, reply) {
   try {
+    console.log("REQUEST BODY")
+    console.log(request.body.data);
     let createdExerciseSets = await FitnessQueries
       .createExerciseSets({
         activityId: parseInt(request.params.activityId),
         data: request.body.data
       });
+
+    console.log("Created:")
+    console.log(createdExerciseSets);
 
     reply.status(201).send(createdExerciseSets)
   } catch (error) {

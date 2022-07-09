@@ -26,13 +26,11 @@ Model.knex(db);
 
 // Initialize Fastify.
 const fastify = Fastify({
-  logger: {
-    prettyPrint: true,
-    level: "error",
-  },
+  logger: {level: "error"},
+  exposeHeadRoutes: false,
 });
-fastify.register(fastifyCors); // Specify whitelist later.
 fastify.register(fastifyPrintRoutes);
+fastify.register(fastifyCors); // Specify whitelist later.
 fastify.register(fastifySwagger, {
   exposeRoute: true,
   routePrefix: "/documentation",
