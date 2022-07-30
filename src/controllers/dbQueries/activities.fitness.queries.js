@@ -30,7 +30,6 @@ export default class FitnessQueries {
         "completedExSetNotes",
         "rpeValue"
       )
-      //.where("userTeams.teamId", request.params.teamId)
       .orderBy("userTeamActivities.id")
       .orderBy("exerciseSets.id")
       .joinRelated({
@@ -101,8 +100,9 @@ export default class FitnessQueries {
         )
         .throwIfNotFound();
     });
-    
+
     let fitnessSessionInformation = await dbQuery;
+
     return FitnessQueryFormatter
       .allTeamFitnessData(fitnessSessionInformation);
   }

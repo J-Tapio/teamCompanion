@@ -51,10 +51,11 @@ export default class FitnessQueryFormatter {
           }
         }, []);
       })
-
       // Sub-arrays of teamMembers to single object
       // Object is overall information about team member,
       // and assigned fitness activities
+      // TODO: Implementation logic wrong - should show all assigned members!
+      // TODO: Fix issue and tests accordingly
       .map((userTeamMember) => {
         return {
           teamMember: {

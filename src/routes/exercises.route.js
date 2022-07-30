@@ -18,6 +18,17 @@ export default [
     },
   },
   {
+    method: "GET",
+    url: "/exercises/ex-eq",
+    schema: exerciseSchemas.exToEqId,
+    preValidation: authenticateUser,
+    preHandler: checkTrainingAdminRole,
+    handler: exerciseHandlers.exerciseToEquipmentId,
+    config: {
+      description: "Retrieve exercise to equipment id with provided equipment and exercise id information."
+    }
+  },
+  {
     method: "POST",
     url: "/exercises",
     schema: exerciseSchemas.createExercise,
@@ -36,7 +47,8 @@ export default [
     preHandler: checkTrainingAdminRole,
     handler: exerciseHandlers.allExEq,
     config: {
-      description: "Retrieve existing equipment and exercises for new exercise & equipment connection",
+      description:
+        "Retrieve existing equipment and exercises for new exercise & equipment connection",
     },
   },
   {

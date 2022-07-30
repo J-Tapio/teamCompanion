@@ -23,3 +23,4 @@ services:
       POSTGRES_USER: ${DEV_POSTGRES_USER}
       ADMINPWD: ${DEV_ADMINPWD}
     command: ["postgres", "-c", "log_statement=all"]
+    

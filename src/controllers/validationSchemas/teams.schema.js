@@ -46,6 +46,7 @@ let teamMember = {
   type: "object",
   properties: {
     userId: { type: "integer" },
+    userTeamId: { type: "integer" },
     firstName: { type: "string" },
     lastName: { type: "string" },
     teamRole: { type: "string" },

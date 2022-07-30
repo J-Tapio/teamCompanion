@@ -5,7 +5,6 @@ export async function generatePasswordHash(password) {
     const hashedPassword = await fastify.bcrypt.hash(password);
     return hashedPassword;
   } catch (error) {
-    console.log(error);
     throw new Error(error);
   }
 }
@@ -18,7 +17,6 @@ export async function comparePasswords(password, dbHashPassword) {
       return false;
     }
   } catch (error) {
-    console.log(error);
     throw new Error(error)
   }
 }

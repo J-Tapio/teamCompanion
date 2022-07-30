@@ -87,7 +87,7 @@ export default class ActivitiesQueries {
 
 
   static async teamActivityById({teamId, activityId}) {
-    let baseQuery = this.#createdActivitiesQuery();
+    let baseQuery = this.#createdActivitiesQuery()
     let dbQuery = baseQuery.modify((baseQuery) => {
       baseQuery
         .joinRelated({ userTeamActivities: true })
@@ -152,7 +152,7 @@ export default class ActivitiesQueries {
     return createdTeamActivity;
   }
 
-  // RETURNS EVERYTHING?
+
   static async updateTeamActivity({activityId, teamId, updatedBy, data}) {
     let updatedActivity = await TeamActivities.query()
       .where({
@@ -179,7 +179,8 @@ export default class ActivitiesQueries {
     
     return updatedActivity;
   }
-  // TEAM ID??
+
+
   static async deleteTeamActivity({teamId, activityId}) {
     await TeamActivities.query()
       .delete()
@@ -190,7 +191,7 @@ export default class ActivitiesQueries {
       .throwIfNotFound();
   }
 
-
+  
   static async #checkThatParticipantsPartOfTheTeam(teamId, data) {
     // Check that participants are part of the team:
     let teamMembers = data.map((participant) => [
@@ -199,9 +200,10 @@ export default class ActivitiesQueries {
     ]);
 
     let dbTeamMembers = await UserTeams.query()
-      .whereIn(["id", "teamId"], teamMembers)
+      .whereIn(["userId", "teamId"], teamMembers)
       .returning("id");
-    // Query returns matches, hence the check for length equality:
+
+    // Query returns matches when comparing payload provided id's against existing id's in database, hence the check for length equality:
     if (teamMembers.length !== dbTeamMembers.length) {
       throw new AppError("DB id matches unequal with payload data");
     }
@@ -209,6 +211,7 @@ export default class ActivitiesQueries {
 
 
   static async insertActivityParticipants({teamId, activityId, data}) {
+    // Check that payload data userTeamId's exist in db
     await this.#checkThatParticipantsPartOfTheTeam(teamId, data);
 
     // Batch insert

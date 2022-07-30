@@ -222,6 +222,7 @@ describe("::: ACTIVITIES CONTROLLER TESTS - Fitness/Exercises :::", () => {
   });
 
   describe(":: With valid access token & priviledge ::", () => {
+    
     describe(":: GET /activities/team/:teamId/activity/fitness ::", () => {
       it("Should return status 404 when teamId unknown", async () => {
         let res = await chai.requester

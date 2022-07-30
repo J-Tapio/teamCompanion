@@ -143,6 +143,7 @@ describe("::: TEAMS CONTROLLER TESTS :::", () => {
             expect(teamMemberRoles).to.be.ofSize(1);
             expect(teamMemberRoles[0]).to.have.all.keys(
               "userId",
+              "userTeamId",
               "firstName",
               "lastName",
               "teamRole",

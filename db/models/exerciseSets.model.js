@@ -14,7 +14,7 @@ class ExerciseSets extends Model {
     /**
      * If ExWeight not null, ExRepetitions cannot be null
      * ! Check also for 0, undefined, false, empty string etc.
-     * Might be overkill, Fastify and Objection already validate payload
+     * Might be overkill, Fastify/AJV and Objection already validate payload
      */
     if (
       (!this.assignedExWeight && this.assignedExRepetitions) ||

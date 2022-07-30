@@ -124,7 +124,7 @@ export async function checkForUnknownUrlIds(fastify, options) {
   })
 }
 
-//TODO: Think through again the implementation. Refactor as needed.
+
 export async function checkActivitiesPriviledge(fastify, options) {
   fastify.decorateRequest("checkActivitiesPriviledge", async function(request, reply) {
     try {

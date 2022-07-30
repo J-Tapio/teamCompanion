@@ -1,6 +1,6 @@
-import { initializeDB, tearDownDBAndServer } from "./_test_helpers.js";
+import { initializeDBAndServer, teardownDBAndServer } from "./_test_helpers.js";
 
 export const mochaHooks = {
-  beforeAll: initializeDB,
-  afterAll: tearDownDBAndServer
+  beforeAll: initializeDBAndServer,
+  afterAll: teardownDBAndServer
 }

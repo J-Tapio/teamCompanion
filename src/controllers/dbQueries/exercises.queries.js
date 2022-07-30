@@ -79,11 +79,32 @@ export default class ExercisesQueries extends ExercisesQueryFormatter {
     .throwIfNotFound();
   }
 
-
+  //TODO: Consider own route for existing extoeq information. Newly added as needed for inserting exercises to program.
   static async allExercisesAndEquipment() {
     let exercises = await Exercises.query().select("id", "exerciseName");
     let equipment = await Equipment.query().select("id", "equipmentName");
     return { exercises, equipment };
+  }
+
+  static async exerciseToEquipmentId(equipmentId, exerciseId) {
+    /*     .select(
+          "exercisesEquipment.id",
+          "exercisesEquipment.exerciseId",
+          "exercises.exerciseName",
+          "exercisesEquipment.equipmentId",
+          "equipment.equipmentName",
+        ) */
+
+    let data = await ExercisesEquipment.query()
+      .join("exercises", "exercises.id", "=", "exercisesEquipment.exerciseId")
+      .join("equipment", "equipment.id", "=", "exercisesEquipment.equipmentId")
+      .select("exercisesEquipment.id")
+      .where("exercisesEquipment.equipmentId", equipmentId)
+      .andWhere("exercisesEquipment.exerciseId", exerciseId)
+      .first()
+      .throwIfNotFound();
+
+      return data;
   }
 
 

@@ -41,7 +41,7 @@ async function updateExercise(request, reply) {
       requestUserId: request.user.id,
       updateInformation: request.body
     });
-    console.log(updatedExercise)
+    
     reply.send(updatedExercise);
   } catch (error) {
     errorHandler(error, reply);
@@ -59,10 +59,25 @@ async function deleteExercise(request, reply) {
   }
 }
 
+// Exercises and Equipment individually
 async function allExEq(request, reply) {
   try {
     let data = await ExercisesQueries.allExercisesAndEquipment();
     reply.send({data});
+  } catch (error) {
+    errorHandler(error, reply);
+  }
+}
+
+//!28.07.2022 Added.
+//TODO: Write tests for this implementation
+async function exerciseToEquipmentId(request, reply) {
+  try {
+    let equipmentId = request.query.equipmentId;
+    let exerciseId = request.query.exerciseId;
+    let {id} = await ExercisesQueries.exerciseToEquipmentId(equipmentId, exerciseId);
+
+    reply.send({exercisesEquipmentId: id});
   } catch (error) {
     errorHandler(error, reply);
   }
@@ -87,6 +102,7 @@ async function createExEq(request, reply) {
 
 export default {
   allExercises,
+  exerciseToEquipmentId,
   exerciseById,
   createExercise,
   updateExercise,

@@ -18,6 +18,14 @@ export default [
     id: 4,
     equipment_id: 4,
     exercise_id: 3,
+    exercise_variations: [
+      "Stiff-Legged",
+      "Romanian",
+      "Sumo",
+      "Narrow-Stance",
+      "Hook-Grip",
+      "Mixed-Grip",
+    ],
   },
   {
     id: 5,
@@ -103,27 +111,14 @@ export default [
   {
     id: 20,
     equipment_id: 8,
-    exercise_id: 7,
+    exercise_id: 8,
     exercise_variations: ["Right Side", "Left Side", "Alternating"],
   },
   {
     id: 21,
     equipment_id: 8,
-    exercise_id: 7,
+    exercise_id: 9,
     exercise_variations: ["Right Side", "Left Side", "Alternating"],
-  },
-  {
-    id: 22,
-    equipment_id: 4,
-    exercise_variations: [
-      "Stiff-Legged",
-      "Romanian",
-      "Sumo",
-      "Narrow-Stance",
-      "Hook-Grip",
-      "Mixed-Grip",
-    ],
-    exercise_id: 3,
   },
   {
     id: 23,

@@ -2,7 +2,7 @@ import Users from "../../../db/models/users.model.js";
 import testHelpers from "../_test_helpers.js";
 import bcrypt from "bcryptjs";
 const chai = testHelpers.getChai();
-const {insertData} = testHelpers;
+const { insertData, logInUsers } = testHelpers;
 const expect = chai.expect;
 
 // TODO: Add more expectations later. Figure out possible edge-cases.
@@ -12,14 +12,10 @@ describe("::: /users controller tests :::", () => {
   let coachUserToken;
   let athleteUserToken;
 
+
   before(async () => {
     await insertData();
-    
-    adminUserToken = (await chai.requester.post("/login").send({email: "admin@mail.com", password: "admin123"})).body.accessToken;
-    
-    coachUserToken = (await chai.requester.post("/login").send({email: "coach@mail.com", password: "coach123"})).body.accessToken;
-
-    athleteUserToken = (await chai.requester.post("/login").send({email: "athlete@mail.com", password: "athlete123"})).body.accessToken;
+    ({adminUserToken, coachUserToken, athleteUserToken} = await logInUsers(chai))
   });
 
 

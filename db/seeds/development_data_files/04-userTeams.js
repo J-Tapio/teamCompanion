@@ -1,4 +1,4 @@
-import userTeams from "../test_seed_data/04-userTeams.js";
+import userTeams from "../development_seed_data/04-userTeams.js";
 
 export const seed = async function(knex) {
   await knex("user_teams").del()

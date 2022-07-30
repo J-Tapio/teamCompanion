@@ -1,4 +1,5 @@
 import fastify from "../../app.js";
+import errorHandler from "../lib/errorHandler.js";
 import Users from "../../db/models/users.model.js";
 
 export async function loginUser(request, reply) {
@@ -18,7 +19,7 @@ export async function loginUser(request, reply) {
     
     reply.status(200).send({accessToken, refreshToken});
   } catch (error) {
-    console.log(error);
+    errorHandler(error, reply);
   }
 }
 

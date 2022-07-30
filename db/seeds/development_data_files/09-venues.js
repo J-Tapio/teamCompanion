@@ -1,4 +1,4 @@
-import venues from "../test_seed_data/09-venues.js";
+import venues from "../development_seed_data/09-venues.js";
 
 export const seed = async function (knex) {
   await knex("venues").del();

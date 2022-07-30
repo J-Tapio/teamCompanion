@@ -140,8 +140,6 @@ async function addTeamMembersCSV(request, reply) {
       data: teamMembersCSV,
       teamId: parseInt(request.params.id)
     });
-    
-    console.log(createdTeamMembers)
 
     reply.status(201).send(createdTeamMembers);
   } catch (error) {
@@ -206,7 +204,6 @@ async function updateTeamVenue(request, reply) {
 
     reply.send(updatedTeamVenue);
   } catch (error) {
-    console.log(error);
     errorHandler(error, reply);
   }
 }

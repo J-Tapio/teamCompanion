@@ -22,7 +22,6 @@ export async function verifyUserAndPassword(request, reply) {
       reply.badRequest("Invalid credentials.");
     }
   } catch (error) {
-    console.log(error);
     errorHandler(error, reply);
   }
 }

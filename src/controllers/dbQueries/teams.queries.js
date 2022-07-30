@@ -64,7 +64,7 @@ export default class TeamsQueries {
       .throwIfNotFound();
   }
 
-
+//! Add userTeamId also to returned result
   static async teamById({teamId}) {
     let dbResult = await Teams.query()
       .joinRelated("userTeams")
@@ -84,6 +84,7 @@ export default class TeamsQueries {
         "teams.state",
         "teams.country",
         "user_teams_join.userId as userId",
+        "user_teams_join.id as userTeamId",
         "userInformation.firstName",
         "userInformation.lastName",
         "user_teams_join.teamRole",
@@ -134,8 +135,6 @@ export default class TeamsQueries {
         return teamMemberEmail;
       }
     })
-
-    console.log(pendingActivations);
 
     return {count: pendingActivations.length, data: pendingActivations};
   }
@@ -215,7 +214,6 @@ export default class TeamsQueries {
 
 
   static async deleteTeamVenue({id, teamId}) {
-    console.log(id, teamId)
     await Venues.query()
       .del()
       .where({ id, teamId })

@@ -10,7 +10,7 @@ describe("/login controller tests", () => {
     await insertData();
   });
 
-  it("Should return status 401 with invalid credentials", async() => {
+  it("Should return status 400 with invalid credentials", async() => {
     const res1 = await chai.requester
       .post("/login")
       .send({ email: "invalid@mail.com", password: "admin123" });

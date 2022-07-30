@@ -5,10 +5,10 @@ ___
 
 ## Running tests
 
-### Build & run test container
+### Build & run test database container
 
 ```bash
-docker-compose up db_test
+docker-compose up -d db_test
 ```
 
 ### Run the tests
@@ -21,10 +21,10 @@ ___
 
 ## Running development server
 
-### Build & run development container
+### Build & run development database container
 
 ```bash
-docker-compose up db_development
+docker-compose up -d db_development
 ```
 
 ### Run the server

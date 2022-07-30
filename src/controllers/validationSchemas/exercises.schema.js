@@ -153,6 +153,36 @@ let exercisesEquipmentResponse = {
   ...errors
 }
 
+let exToEqResponse = {
+  200: {
+    type: "object",
+    properties: {
+      data: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            id: { type: "integer" },
+            exerciseId: { type: "integer" },
+            exerciseName: { type: "string" },
+            equipmentId: { type: "integer" },
+            equipmentName: { type: "string" },
+          },
+        },
+      },
+    },
+  },
+};
+
+let exToEqIdResponse = {
+  200: {
+    type: "object",
+    properties: {
+      exercisesEquipmentId: { type: "integer" },
+    }
+  }
+}
+
 // Validation for new exercise with equipment
 let createExercisesEquipmentBody = {
   type: "object",
@@ -210,6 +240,11 @@ let allExercises = {
   response: allExercisesResponse,
 };
 
+//! Newly added. Needed when assigning exercises to fitness event.
+let exToEqId = {
+  response: exToEqIdResponse,
+};
+
 let exerciseById = {
   response: exerciseByIdResponse,
 };
@@ -247,6 +282,7 @@ let createExerciseEquipment = {
 
 export default {
   allExercises,
+  exToEqId,
   exerciseById,
   createExercise,
   updateExercise,

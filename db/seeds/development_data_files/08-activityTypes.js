@@ -1,4 +1,4 @@
-import activityTypes from "../test_seed_data/08-activityTypes.js"
+import activityTypes from "../development_seed_data/08-activityTypes.js"
 
 export const seed = async function (knex) {
   await knex("activity_types").del()

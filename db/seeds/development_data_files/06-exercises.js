@@ -1,4 +1,4 @@
-import exercises from "../test_seed_data/06-exercises.js";
+import exercises from "../development_seed_data/06-exercises.js";
 
 export const seed = async function (knex) {
   await knex("exercises").del()

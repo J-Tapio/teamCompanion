@@ -6,20 +6,27 @@ import chaiHttp from "chai-http";
 
 chai.use(chaiHttp);
 chai.use(assertArrays);
+const PORT = process.env.PORT || 3005;
+/*   .then((server) => (chai.requester = chai.request(server).keepOpen())); */
 
-server
-  .listen({port: process.env.PORT || 3005})
-  .then((server) => (chai.requester = chai.request(server).keepOpen()));
-
-export async function initializeDB() {
+export async function initializeDBAndServer() {
   try {
+    server.listen({ port: PORT }, function initializeChaiRequester(error, address) {
+      if(error) {
+        server.log.error(error);
+      } else {
+        chai.requester = chai.request(address).keepOpen();
+      }
+    })
+    console.log("Fastify - SERVER STARTED");
     await db.migrate.latest();
+    console.log("Knex/DB - Migrated to latest");
   } catch (error) {
     console.error(error);
   }
 }
 
-export async function tearDownDBAndServer() {
+export async function teardownDBAndServer() {
   try {
     // Knex
     await db.migrate.rollback({ all: true });
@@ -41,8 +48,11 @@ export async function insertData() {
   }
 }
 
+//! Runs within every test-file. Better solution would be to run once and make the logged in users available within test-files? Unfortunately insertData runs also within before hook in every test-file. Hence, user-login per file needs to be done after.
+
 export async function logInUsers(chai) {
   try {
+    console.log("Loggin in users");
     let adminUserToken = (
       await chai.requester
         .post("/login")
@@ -88,6 +98,7 @@ export async function logInUsers(chai) {
       staffUserToken,
     };
   } catch (error) {
+    console.log("Error while loggin in users");
     console.error(error);
   }
 }

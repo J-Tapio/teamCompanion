@@ -1,5 +1,5 @@
 import server from "./app.js";
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3005;
 
 server.listen({port: PORT}, function (error, address) {
   if (error) {
@@ -9,6 +9,3 @@ server.listen({port: PORT}, function (error, address) {
     server.log.info(`Server started on port: ${PORT}`)
   }
 })
-
-
-
