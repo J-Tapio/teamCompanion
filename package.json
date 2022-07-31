@@ -1,11 +1,12 @@
 {
-  "name": "teamcompanion",
+  "name": "teamcompanion-be",
   "version": "0.1.0",
   "description": "backend of teamCompanion to create field/training/rehab sessions",
   "main": "app.js",
   "type": "module",
   "scripts": {
-    "start": "index.js",
+    "start": "node index.js",
+    "start-dev": "run-s db:destroy db:migrate db:seed start",
     "dev": "NODE_ENV=development run-s db:destroy db:migrate db:seed server:dev",
     "test": "NODE_ENV=test mocha --timeout 15000 src/test/**/*.js --require src/test/hooks.js",
     "db:migrate": "knex migrate:latest",
