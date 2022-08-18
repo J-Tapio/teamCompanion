@@ -43,7 +43,6 @@ async function initializeFastify() {
           description: "Team Companion API",
           version: "0.1.0",
         },
-        host: "https://teamcompanion.juha-tap.io/",
       },
     });
     await fastify.register(fastifySensible);
