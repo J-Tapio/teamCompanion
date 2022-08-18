@@ -27,11 +27,6 @@ Model.knex(db);
 // Initialize Fastify.
 const fastify = Fastify({
   logger: {levels: ["error", "info"]},
-  http2: true,
-  https: {
-    key: process.env.SSL_KEY,
-    cert: process.env.SSL_CERT,
-  },
   exposeHeadRoutes: false,
 });
 
