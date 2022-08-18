@@ -77,11 +77,3 @@ export default {
   },
   ...knexSnakeCaseMappers(),
 }, */
-
-/* {
-      database: "teamcompanion_db_development",
-      user: process.env.DEV_POSTGRES_USER,
-      password: process.env.DEV_POSTGRES_PASSWORD,
-      host: "localhost",
-      port: 5555,
-    }, */
