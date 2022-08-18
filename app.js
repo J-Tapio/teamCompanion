@@ -27,6 +27,7 @@ Model.knex(db);
 // Initialize Fastify.
 const fastify = Fastify({
   logger: {levels: ["error", "info"]},
+  http2:true,
   exposeHeadRoutes: false,
 });
 
@@ -43,6 +44,7 @@ async function initializeFastify() {
           description: "Team Companion API",
           version: "0.1.0",
         },
+        host: "http://tc.juha-tap.io",
       },
     });
     await fastify.register(fastifySensible);
