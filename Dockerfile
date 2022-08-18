@@ -9,6 +9,6 @@ COPY src ./src
 COPY db ./db
 COPY knexfile.js index.js app.js ./
 
-EXPOSE 80
+EXPOSE 6666
 
 CMD [ "npm", "run", "start-dev" ]
