@@ -25,7 +25,7 @@ export default [
     preHandler: checkTrainingAdminRole,
     handler: exerciseHandlers.exerciseToEquipmentId,
     config: {
-      description: "Retrieve exercise to equipment id with provided equipment and exercise id information."
+      description: "Retrieve exercise to equipment ids with provided equipment and exercise id information."
     }
   },
   {

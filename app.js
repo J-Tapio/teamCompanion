@@ -24,14 +24,15 @@ import { adminCheck } from "./src/decorators/fastifyDecorators.js";
 export const db = Knex(knexConfiguration[process.env.NODE_ENV]);
 Model.knex(db);
 
-// Initialize Fastify.
-const fastify = Fastify({
-  logger: {levels: ["error", "info"]},
-  exposeHeadRoutes: false,
-});
 
+// Initialize Fastify
 async function initializeFastify() {
   try {
+    const fastify = Fastify({
+      logger: {levels: ["error", "info"]},
+      exposeHeadRoutes: false,
+    });
+
     await fastify.register(fastifyPrintRoutes);
     await fastify.register(fastifyCors); // Specify whitelist later.
     await fastify.register(fastifySwagger, {
@@ -59,12 +60,13 @@ async function initializeFastify() {
     appRoutes.forEach((endpoint) => {
       fastify.route(endpoint);
     });
+
+    return fastify;
   } catch (error) {
     console.error(error);
     process.exit(1);
   }
 }
 
-await initializeFastify();
-
-export default fastify;
+const server = await initializeFastify();
+export default server;
