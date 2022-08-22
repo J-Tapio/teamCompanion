@@ -200,8 +200,8 @@ export default class ActivitiesQueries {
     ]);
 
     let dbTeamMembers = await UserTeams.query()
-      .whereIn(["userId", "teamId"], teamMembers)
-      .returning("id");
+      .whereIn(["id", "teamId"], teamMembers)
+      .select("id");
 
     // Query returns matches when comparing payload provided id's against existing id's in database, hence the check for length equality:
     if (teamMembers.length !== dbTeamMembers.length) {
